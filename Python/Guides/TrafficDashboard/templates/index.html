@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Home Page</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <style>
+
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+      height: 100%;
+      margin-top:0;
+      margin-bottom:0;
+      min-height: calc(100vh - 50px);
+
+    }
+    .jumbotron {
+    margin-bottom:0
+
+    }
+
+    .modal {
+    overflow-y: auto;
+}
+
+    /* On small screens, set height to 'auto' for the grid */
+    @media screen and (max-width: 767px) {
+      .row.content {height: auto;}
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="jumbotron">
+  <div class="container-fluid text-center">
+    <h1><img src="{{ logo }}" alt="SignalWire Logo" class="float-left" width="200" height="200">SignalWire Communications Reporting Center</h1>
+    <h2>Develop, Deploy, Disrupt</h2>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row content">
+    <div class="col-sm-2 sidenav hidden-xs">
+      <ul class="nav nav-pills nav-stacked">
+        <li class="active"><a href="/home">Home Page</a></li>
+        <li><a href="/displayCalls">Call Records</a></li>
+        <li><a href="/displayMessages">Message Records</a></li>
+        <li><a href="/displayAll">Combined Records</a></li>
+        <li><a href="/displayCallAnalytics">Call Analytics</a></li>
+        <li><a href="/displayMessageAnalytics">Message Analytics</a></li>
+        <li><a href="/displayBillingAnalytics">Billing Analytics</a></li>
+        <li><hr></li>
+        <li><a href="https://signalwire.com/">SignalWire Website</a></li>
+        <li><a href="https://www.facebook.com/signalwireinc/">SignalWire Facebook</a></li>
+        <li><a href="https://www.linkedin.com/company/signalwire/">SignalWire LinkedIn</a></li>
+        <li><hr></li>
+        <li><hr></li>
+        <li>SignalWire Address: </li>
+        <li>228 Hamilton Ave</li>
+        <li>3rd Floor</li>
+        <li>Palo Alto, CA 94301</li>
+      </ul><br>
+    </div>
+    <br>
+
+    <div class="row">
+    <div class="col-md-3">
+      <div class="panel panel-info">
+        <div class="panel-heading">Call Analytics</div>
+        <form action="/displayCallAnalytics" method="get" id="formCA"></form>
+        <div class="panel-body"> <div class="panel-body"><button type="submit" form="formCA" class="btn btn-primary btn-lg">View Call Analytics Here</button></div></div>
+        <div class="panel-footer">View Graphs & Tables About Calls</div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="panel panel-info">
+        <div class="panel-heading">Message Analytics</div>
+        <form action="/displayMessageAnalytics" method="get" id="formMS"></form>
+        <div class="panel-body"> <div class="panel-body"><button type="submit" form="formMS" class="btn btn-primary btn-lg">View Message Analytics Here</button></div></div>
+        <div class="panel-footer">View Graphs & Tables About Messages</div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="panel panel-info">
+        <div class="panel-heading">Billing Analytics</div>
+        <form action="/displayBillingAnalytics" method="get" id="formBill"></form>
+        <div class="panel-body"> <div class="panel-body"><button type="submit" form="formBill" class="btn btn-primary btn-lg">View Billing Analytics Here</button></div></div>
+        <div class="panel-footer">View Graphs & Tables About Billing</div>
+      </div>
+    </div>
+      
+    <div class="col-md-3">
+      <div class="panel panel-info">
+        <div class="panel-heading">Call and Message Records Combined</div>
+        <div class="panel-body"> <div class="panel-body">
+          <h5>Please select a start/end date to filter your records by a <br> date range. Otherwise, leave it blank to return all records.</h5>
+          <form action="/displayAll" method="GET" id="formAll">
+            <hr>
+            <input type="date" name="startDate" id="startA">
+            <label for="startA">Start Date</label>
+             <br>
+            <input type="date" name="endDate" id="endA">
+            <label for="endA">End Date</label>
+          </form>
+        </div></div>
+        <div class="panel-footer"><button class="btn btn-primary btn-lg" form="formAll">View Records</button></div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="panel panel-info">
+        <div class="panel-heading">Message Records Only</div>
+        <div class="panel-body"> <div class="panel-body">
+          <h5>Please select a start/end date to filter your records by a <br> date range. Otherwise, leave it blank to return all records.</h5>
+          <form action="/displayMessages" method="GET" id="formMessages">
+            <hr>
+            <input type="date" name="startDate" id="startM">
+            <label for="startM">Start Date</label>
+            <br>
+            <input type="date" name="endDate" id="endM">
+            <label for="endM">End Date</label>
+          </form>
+        </div></div>
+        <div class="panel-footer"><button class="btn btn-primary btn-lg" form="formMessages">View Records</button></div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="panel panel-info">
+        <div class="panel-heading">Call Records Only</div>
+        <div class="panel-body"> <div class="panel-body">
+          <h5>Please select a start/end date to filter your records by a <br> date range.
+            Otherwise, leave it blank to return all records.</h5>
+          <form action="/displayCalls" method="GET" id="formCalls">
+            <hr>
+            <input type="date" name="startDate" id="start">
+            <label for="start">Start Date</label>
+             <br>
+            <input type="date" name="endDate" id="end">
+            <label for="end">End Date</label>
+          </form>
+        </div></div>
+        <div class="panel-footer"><button class="btn btn-primary btn-lg" form="formCalls">View Records</button></div>
+      </div>
+    </div>
+  </div>
+
+</div><br><br>
+</body>
+</html>

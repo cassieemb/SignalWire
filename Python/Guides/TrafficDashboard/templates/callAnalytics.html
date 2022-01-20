@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Call Analytics</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <style>
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {height: 550px}
+
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+      height: 100%;
+    }
+
+    /* On small screens, set height to 'auto' for the grid */
+    @media screen and (max-width: 767px) {
+      .row.content {height: auto;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid">
+  <div class="row content">
+    <div class="col-sm-2 sidenav hidden-xs">
+      <h2><img src="{{ logo }}" alt="SignalWire Logo" class="img-responsive"></h2>
+      <ul class="nav nav-pills nav-stacked">
+        <li class="active"><a href="/displayCallAnalytics">Current Dashboard</a></li>
+        <li><a href="/displayBillingAnalytics">Billing Analytics</a></li>
+        <li><a href="/displayMessageAnalytics">Message Analytics</a></li>
+        <li><a href="/home">Home Page</a></li>
+      </ul><br>
+    </div>
+    <br>
+
+    <div class="col-sm-10">
+      <div class="well">
+        <h3>SignalWire Analytics</h3>
+        <h4>Call Reporting Dashboard</h4>
+      </div>
+      <div class="row">
+        <div class="col-sm-5">
+          <div class="well">
+            <h4>Call Status Distribution</h4>
+            <p><img src="{{ status }}" alt="Call Status Distribution" class="img-responsive" ></p>
+          </div>
+        </div>
+
+        <div class="col-sm-2">
+          <div class="well">
+            <h4> Amount of Calls per Number</h4>
+            <table>{{ table |safe  }}</table>
+          </div>
+        </div>
+
+        <div class="col-sm-5">
+          <div class="well">
+            <h4>Average Call Duration per Month</h4>
+            <p><img src="{{ duration }}" alt="Average Call Duration by Month" class="img-responsive" ></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-3">
+          <div class="well">
+            <h4>Total Calls on Space: {{ CallTotal }}</h4>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="well">
+            <h4>Total Numbers on Account: {{ NumTotal }}</h4>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="well">
+            <h4>Total Cost on Calls: {{ Price }}</h4>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="well">
+            <h4>Total Call Duration: {{ durationS }} minutes</h4>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+         <div class="col-sm-5">
+          <div class="well">
+            <h4>Total Number of Calls per Month</h4>
+            <p><img src="{{ summary }}" alt="Total Number of Calls by Month" class="img-responsive" ></p>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="well">
+            <h4>Call Type Distribution</h4>
+            <p><img src="{{ type }}" alt="Call Type Distribution" class="img-responsive" ></p>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="well">
+            <h4>Average Call Duration per Number</h4>
+            <table> {{ table1 | safe }}</table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

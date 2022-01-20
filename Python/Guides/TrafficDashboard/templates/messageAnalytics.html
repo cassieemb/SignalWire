@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Message Analytics</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <style>
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {height: 550px}
+
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+      height: 100%;
+    }
+
+    /* On small screens, set height to 'auto' for the grid */
+    @media screen and (max-width: 767px) {
+      .row.content {height: auto;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid">
+
+    <div class="col-sm-10">
+      <div class="well">
+        <h3>SignalWire Analytics</h3>
+        <h4>Message Reporting Dashboard</h4>
+      </div>
+      <div class="row">
+        <div class="col-sm-4" >
+          <div class="well">
+            <h4>Message Status Distribution</h4>
+            <p><img src="{{ status }}" alt="Message Status Distribution" class="img-responsive" ></p>
+          </div>
+        </div>
+         <div class="col-sm-4" >
+          <div class="well">
+            <h4>Number of Messages per Month</h4>
+            <p><img src="{{ message }}" alt="Message Type Distribution" class="img-responsive" ></p>
+          </div>
+        </div>
+        <div class="col-sm-4" >
+          <div class="well">
+            <h4>Message Type Distribution</h4>
+            <p><img src="{{ type }}" alt="Message Type Distribution" class="img-responsive" ></p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="well">
+            <h4>Total Messages Sent/Received on Project: {{ totalMess }}</h4>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="well">
+            <h4>Total DIDs in Project: {{ totalNum }}</h4>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="well">
+            <h4>Total Cost Spent on Messaging: {{ price }}</h4>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+          <div class="col-sm-4" >
+          <div class="well">
+            <h4>Error Code Distribution</h4>
+            <p><img src="{{ error }}" alt="Error Code Distribution" class="img-responsive" ></p>
+          </div>
+        </div>
+        <div class="col-sm-4" >
+          <div class="well">
+            <h4>Inbound vs Outbound Message Distribution</h4>
+            <p><img src="{{ inbound }}" alt="Inbound vs Outbound" class="img-responsive" ></p>
+          </div>
+        </div>
+        <div class="col-sm-4" >
+          <div class="well">
+            <h4>Outbound Status Distribution</h4>
+            <p><img src="{{ outbound }}" alt="Outbound Status Distribution" class="img-responsive" ></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+
