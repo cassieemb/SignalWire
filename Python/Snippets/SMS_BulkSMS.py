@@ -5,7 +5,7 @@ import csv
 # import client
 client = signalwire_client("ProjectID", "AuthToken", signalwire_space_url = 'example.signalwire.com')
 
-# define results array for storing client records from csv and messages array for storing data about send
+# define results dict for storing client records from csv and messages list for storing data about send
 results = {}
 messages = []
 
