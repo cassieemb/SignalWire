@@ -73,14 +73,82 @@ def formatNumber(number):
     formattedNumber = "+" + str(number) if "+" not in str(number) else str(number)
     return str(formattedNumber)
 
+# remove customer row from CSV
+def deleteCustomerDataCSV(folder, number, path=None):
+    dir_list = os.listdir(folder)
+    # remove opt out list from CSVs to evaluate
+    for file in dir_list:
+        if file == 'opted_out_customers.csv':
+             dir_list.pop(dir_list.index(file))
+
+    numCSVs = len(dir_list)
+    i = 0
+
+    if path:
+        df = pd.read_csv(path)
+        print("Before")
+        print(df)
+        nf = df.drop(df.index[df['Number'] == int(number)].tolist())
+        print("After")
+        print(nf)
+        nf.to_csv(path)
+        print(f"Customer associated with {number} removed from active customer data. \n")
+    else:
+        # loop through each CSV and delete rows with matching phone numbers
+        while i < numCSVs:
+            df = pd.read_csv(f"src/{dir_list[i]}")
+            print(df)
+            nf = df.drop(df.index[df['Number'] == int(number)].tolist())
+            print(nf)
+            nf.to_csv(f"src/{dir_list[i]}")
+            print(f"Customer associated with {number} removed from active customer data. \n")
+            i += 1
+
+    return 200
+
 # upload CSV from computer and add to customer Data, display available CSVs
 def uploadCSV(path, newTitle):
     # upload file from somewhere on computer, front end will grab path using js library
-    df = pd.read_csv(path)
+    # strip whitespace and convert to E164 format
+    df = pd.read_csv(path, header = 0)
     fileName = newTitle.replace(" ", "_") + '.csv'
+    df = df.rename(columns=lambda x: x.strip())
     df['Number'] = df['Number'].apply(formatNumber)
     df.to_csv(f"src/{fileName}", index=False, encoding='utf-8')
+    print("Newly uploaded CSV")
+    print(df)
+    print()
 
+
+    # read in CSV to dict where phone number is the key and a list with [first name, last name, opt out date, and file] is the value
+    results = {}
+    with open('src/opted_out_customers.csv', 'r', encoding='utf-8-sig') as file:
+       reader = csv.DictReader(file)
+       for row in reader:
+            results[row['Number']] = [row['First'.strip()], row['Last'.strip()], row['Opt-Out-Date'.strip()], row['filename'.strip()]]
+    print("Opt Out Dict")
+    print(str(results))
+    print()
+
+    # loop through opt out dict and check if the phone number is in the recently uploaded CSV
+    for result in results:
+        if result in df.values:
+            print(f"The number {result} in your most recent upload is associated with {results[result][0]} {results[result][1]} who opted out on {results[result][2]}. "
+                      f"They were originally uploaded in {results[result][3]}")
+            decision = input('Do you want to remove this customer from the data you just uploaded? Type y to remove. \n')
+
+            if decision.strip().lower() == 'y':
+                # deleteCustomerDataCSV('src/', result, f"src/{fileName}")
+                matchingRow = (df.loc[df['Number'] == result])
+
+            else:
+                print('Okay, but remember, ignoring opt outs is bad!')
+
+        else:
+            print("Opted out user is not in this list")
+
+
+uploadCSV('testing.csv', 'test2')
 
 # display all existing CSVs
 def displayCSV(path):
@@ -102,38 +170,6 @@ def displayCSV(path):
         print(results)
     return results
 
-# generate shortened URL using encoding and store in dictionary
-def generateShortenedURL(fullURL):
-    # generate shortened URL from full URL
-    object_id = len(shortenedUrls)
-    shortened_url = f"{hostName}sc/{short_url.encode_url(object_id, min_length=6)}"
-    # store in shortened URL dictionary
-    shortenedUrls[shortened_url] = fullURL
-
-# pull message details using SID for alert box
-def pullMessage(sid):
-    message = client.messages(sid).fetch()
-    return message.sid, message.from_, message.to, message.body, message.status, message.error_code, message.error_message, message.date_sent, message.direction, message.price,message.price_unit
-
-# message history section
-# show history default last 7 days when loading browser page, refresh results every 1 minute on page, click filter page to fill out additional parameters and return messages
-# click sid to show alert box with additional message details and apply button
-def getMessageHistory():
-    messages = client.messages.list()
-    d = []
-    for record in messages:
-        d.append((record.from_, record.to, record.date_sent, record.status, record.sid, record.price,
-                  record.direction))
-        pullMessage(record.sid)
-
-    # format price and sort by most recent date
-    df = pd.DataFrame(d, columns=('From', 'To', 'Date', 'Status', 'SID', 'Price', 'Type'))
-    df['Price'] = df['Price'].fillna(0)
-    df['Price'] = df['Price'].astype(float).round(4)
-    df['Price'] = df['Price'].map('${:,.4f}'.format)
-    df['Date'] = pd.to_datetime(df['Date'])
-    df = df.sort_values(by='Date', ascending=False)
-    print(df.to_string())
 
 # search CSV and return customer record if it exists
 def searchCSV(path, number):
@@ -165,29 +201,41 @@ def searchCSV(path, number):
 
     return customerRecord
 
-# remove customer row from CSV
-def deleteCustomerDataCSV(path, number):
-    dir_list = os.listdir(path)
+# generate shortened URL using encoding and store in dictionary
+def generateShortenedURL(fullURL):
+    # generate shortened URL from full URL
+    object_id = len(shortenedUrls)
+    shortened_url = f"{hostName}sc/{short_url.encode_url(object_id, min_length=6)}"
+    # store in shortened URL dictionary
+    shortenedUrls[shortened_url] = fullURL
 
-    # remove opt out list from CSVs to evaluate
-    for file in dir_list:
-        if file == 'opted_out_customers.csv':
-             dir_list.pop(dir_list.index(file))
 
-    numCSVs = len(dir_list)
+# pull message details using SID for alert box
+def pullMessage(sid):
+    message = client.messages(sid).fetch()
+    return message.sid, message.from_, message.to, message.body, message.status, message.error_code, message.error_message, message.date_sent, message.direction, message.price,message.price_unit
 
-    i = 0
-    # loop through each CSV and delete rows with matching phone numbers
-    while i < numCSVs:
-        df = pd.read_csv(f"src/{dir_list[i]}")
-        print(df)
-        print()
-        nf = df.drop(df.index[df['Number'] == int(number)].tolist())
-        print(nf)
-        print()
-        i += 1
 
-    return 200
+# message history section
+# show history default last 7 days when loading browser page, refresh results every 1 minute on page, click filter page to fill out additional parameters and return messages
+# click sid to show alert box with additional message details and apply button
+def getMessageHistory():
+    messages = client.messages.list()
+    d = []
+    for record in messages:
+        d.append((record.from_, record.to, record.date_sent, record.status, record.sid, record.price,
+                  record.direction))
+        pullMessage(record.sid)
+
+    # format price and sort by most recent date
+    df = pd.DataFrame(d, columns=('From', 'To', 'Date', 'Status', 'SID', 'Price', 'Type'))
+    df['Price'] = df['Price'].fillna(0)
+    df['Price'] = df['Price'].astype(float).round(4)
+    df['Price'] = df['Price'].map('${:,.4f}'.format)
+    df['Date'] = pd.to_datetime(df['Date'])
+    df = df.sort_values(by='Date', ascending=False)
+    print(df.to_string())
+
 
 
 # test function calls

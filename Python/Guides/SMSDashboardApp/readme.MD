@@ -4,8 +4,12 @@
     * send from available number group ---- NOT DONE YET 
     
 * Upload Customer Lists
-  * check for previously opted out people and alert to remove ---- NOT DONE YET 
   * change all numbers to have + prefix  ---- DONE
+  * check for previously opted out people and alert to remove ---- NOT DONE YET 
+    * ISSUES -> comparing for opt out numbers works but removing does not 
+    * something is off with delete, rows don't actually delete from CSV
+    * should allow for retries if input is invalid 
+    * app exits automatically when for loop is closed 
     
 
 * Generate private shortened URLs ---- DONE
