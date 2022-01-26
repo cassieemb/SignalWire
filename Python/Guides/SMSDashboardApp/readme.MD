@@ -1,55 +1,62 @@
 # **Full Service SMS App**
 
 ## To Do Next:
-* keep track of errors per 24 hour period 
-* keep track of opt outs per 24 hour period 
-* create alert function that texts? emails? admin if opt out rate or error rate is too high 
+* start on front end - start from homepage and work outwards 
 
+-------
 
-### Bulk messaging 
- * **Choose from available customer CSVs, set template, and send out messaging**
+### Bulk Messaging Section
+* **Choose from available customer CSVs, set template, and send out messaging**
 * **send from number group**
+* show all numbers on account and choose from number
 
-### Set up number groups 
+-------
+
+### Number Groups Section 
 * **allow to show all numbers on account**
 * **display all number groups, display all number group members**
 * **add a number to a number group** 
-    
+-------
 
-### Upload Customer Lists
+### Customer Data Section
+#### Upload Customer Lists
 * **change all numbers to have + prefix**
 * **check for previously opted out people and alert to remove**
-* **allow for retries if input is invalid** 
-
+* **allow for retries if input is invalid**
   
-### Delete Customer Records 
+#### Delete Customer Records 
 * **delete based on absolute path (used when opted out customer is uploaded)**
 * **delete based on src/ folder (used when customer opts out)**
+-------
 
-### **Private Shortened URLs**
+### **Private Shortened URLs Section**
 * **encode full URLs into shortened URLs and store as key/value pair in dict**
 * **decode shortened URLs and redirect to full URL**
+
+-------
 
 ### Message History Section 
 * **by default show all results between yesterday and present time** 
 * **allow for additional filtering when specified** 
-* set up to refresh every 2 minutes on page 
+* add reload page 
 * click sid to view additional details (use fetch function)
     
-    
-### Utilize status callbacks to keep track of errors
-* do something if error rate gets too high
+-------    
+### Error Reporting Section
+* utilize status callbacks to show error history since app was loaded 
 * click sid to view additional details (use fetch function)
-    
-### Fetch Additional Details 
-* In status callback and message history section, allow click on sid to call function 
-  and return additional information about the message via alert box 
-  
-### Manage opt outs 
+
+-------
+
+### Opt Out Manager
 * **monitor inbound messages for stop phrase**
 * **remove people who opt out from subscriber lists**
 * **add them to do not contact lists**
-* monitor opt out rate, do something if opt out rate gets too high
-  
 
-### Conversational messaging
+-------
+
+### Wish List: Maybes?
+* keep track of errors per 24 hour period 
+* keep track of opt outs per 24 hour period 
+* create alert function that texts? emails? admin if opt out rate or error rate is too high 
+* Conversational messaging

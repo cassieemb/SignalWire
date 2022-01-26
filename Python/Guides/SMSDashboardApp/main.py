@@ -27,6 +27,7 @@ hostName = os.getenv('SIGNALWIRE_HOST_NAME')
 # dictionary of shortened URLs that can be displayed
 shortenedUrls = {}
 
+# error center variables
 undeliveredArray = []
 
 # import client
@@ -399,13 +400,12 @@ def status_callbacks():
     message_sid = request.values.get('MessageSid', None)
     message_status = request.values.get('MessageStatus', None)
     error_code = request.values.get('ErrorCode', None)
-    message_body = request.values.get('Body', None)
     logging.info('SID: {}, Status: {}, ErrorCode: {}'.format(message_sid, message_status, error_code))
+
 
     if (message_status == "undelivered" or message_status == "failed"):
         message = client.messages(message_sid).fetch()
-        # date_sent = datetime.datetime.strptime(str(message.date_sent), "%Y-%m-%d %H:%M:%S%z")
-        # if date_sent < yesterday:
+        print(message.date_sent)
         undeliveredArray.append(
             [message_sid, message_status, error_code, message.error_message, message.date_sent, message.to,
              message.from_, message.body])
@@ -445,8 +445,8 @@ def inbound():
 
     return client_from
 
-# if __name__ == "__main__":
-#     app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
 
 # test function calls
 # send_in_bulk('test.csv', "Test from SignalWire", True, True)
