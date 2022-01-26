@@ -183,14 +183,39 @@ def pullMessage(sid):
 
 
 # show message history for last 24 hours by default - use apply button on browser to pass additional parameters
-def getMessageHistory():
-    today = str(date.today())
-    year = int(today[0:4])
-    mon = int(today[5:7])
-    day = int(today[8:10]) - 1
+def getMessageHistory(startDate=None,endDate=None,fromN=None,toN=None):
+
+    # if no startDate is passed as args, assign default start date as the beginning of the previous date
+    if not startDate:
+        today = str(date.today())
+        year = int(today[0:4])
+        mon = int(today[5:7])
+        day = int(today[8:10]) - 1
+        startDate = datetime.datetime(year, mon, day)
+    else:
+        year = int(startDate[0:4])
+        mon = int(startDate[5:7])
+        day = int(startDate[8:10]) - 1
+        startDate = datetime.datetime(year, mon, day)
+
+    # if end date is passed in, parse into datetime here
+    if endDate:
+        year = int(endDate[0:4])
+        mon = int(endDate[5:7])
+        day = int(endDate[8:10]) - 1
+        endDate = datetime.datetime(year, mon, day)
+
+    # if from number is passed in, format in E164
+    if fromN:
+        fromN = formatNumber(fromN)
+
+    # if to number is passed in, format in E164
+    if toN:
+        toN = formatNumber(toN)
+
+    messages = client.messages.list(date_sent_after=startDate, date_sent_before=endDate, from_=fromN, to=toN)
 
 
-    messages = client.messages.list(date_sent_after=datetime.datetime(year, mon, day, 0, 0, 0))
     d = []
     for record in messages:
         d.append((record.from_, record.to, record.date_sent, record.status, record.sid, record.price,
@@ -205,9 +230,6 @@ def getMessageHistory():
     df['Date'] = pd.to_datetime(df['Date'])
     df = df.sort_values(by='Date', ascending=False)
     print(df.to_string())
-
-
-getMessageHistory()
 
 
 # remove customer row from CSV
@@ -441,3 +463,4 @@ def inbound():
 # list_number_group_members('9b530dd0-04ba-49d5-98e8-a3d7a80bee31')
 # send_in_bulk('test.csv', ' test')
 # send_in_bulk('test.csv', ' test', nameIntro=True, optOut=True, numberGroupID='9b530dd0-04ba-49d5-98e8-a3d7a80bee31')
+# getMessageHistory(startDate='2022-01-10', endDate='2022-01-22', fromN='12022358941', toN='12147903161')

@@ -1,7 +1,6 @@
 # **Full Service SMS App**
 
 ## To Do Next:
-* accept additional parameters optionally in message history, apply button will implement them 
 * keep track of errors per 24 hour period 
 * keep track of opt outs per 24 hour period 
 * create alert function that texts? emails? admin if opt out rate or error rate is too high 
@@ -33,8 +32,8 @@
 
 ### Message History Section 
 * **by default show all results between yesterday and present time** 
-* allow for additional filtering on browser
-* set up to refresh every 2 minutes
+* **allow for additional filtering when specified** 
+* set up to refresh every 2 minutes on page 
 * click sid to view additional details (use fetch function)
     
     
