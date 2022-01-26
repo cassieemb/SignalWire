@@ -6,13 +6,12 @@ from dotenv import load_dotenv
 import csv
 import logging
 import short_url
-from datetime import datetime, timedelta, date
+from datetime import datetime, date
 import time
 import datetime
 import json
-import dateutil
-import tz
-
+import requests
+from requests.auth import HTTPBasicAuth
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -28,20 +27,97 @@ hostName = os.getenv('SIGNALWIRE_HOST_NAME')
 # dictionary of shortened URLs that can be displayed
 shortenedUrls = {}
 
-# today = datetime.datetime.today()
-# yesterday = today - timedelta(days=1)
-# tf = yesterday.strftime(f"%Y-%m-%d %H:%M:%S%z")
-# one_week_ago = today - timedelta(days=7)
-# thirty_days_ago = today - timedelta(days=30)
-
 undeliveredArray = []
 
 # import client
 client = signalwire_client(projectID, authToken, signalwire_space_url=spaceURL)
 
-# functions necessary to perform requests
+
+# list all available numbers on account
+def list_account_numbers():
+    incoming_phone_numbers = client.incoming_phone_numbers.list()
+    numbers = {}
+
+    for record in incoming_phone_numbers:
+        numbers[record.phone_number] = record.sid
+
+    print(numbers)
+    return numbers
+
+
+# create a new number group
+def create_number_group(groupName):
+    url = f"https://{spaceURL}/api/relay/rest/number_groups"
+
+    payloads = {
+        'name': groupName,
+        'sticky_sender': 'true'
+    }
+
+    payloadJSON = json.dumps(payloads)
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payloadJSON,
+                                auth=HTTPBasicAuth(projectID, authToken))
+    print(f"Creating Number Group - details below")
+    print(response.text)
+
+
+# list number groups
+def list_number_groups():
+    url = f"https://{spaceURL}/api/relay/rest/number_groups"
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    response = requests.request("GET", url, headers=headers, auth=HTTPBasicAuth(projectID, authToken))
+    print(f"Listing number groups - details below")
+    response_json = response.json()['data']
+    print(response_json)
+    return response_json
+
+
+# list number groups
+def list_number_group_members(groupID):
+    url = f"https://{spaceURL}/api/relay/rest/number_groups/{groupID}/number_group_memberships"
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    response = requests.request("GET", url, headers=headers, auth=HTTPBasicAuth(projectID, authToken))
+    print(f"Listing number group members - details below")
+    response_json = response.json()['data']
+    print(response_json)
+    return response_json
+
+
+# add a number to a number group
+def add_numbers_to_number_group(number, groupID):
+    url = f"https://{spaceURL}/api/relay/rest/number_groups/{groupID}/number_group_memberships"
+
+    # get sid of phone number
+    numbers = list_account_numbers()
+    numberID = numbers[number]
+
+    payloads = {'phone_number_id': numberID}
+    payloadJSON = json.dumps(payloads)
+
+    headers = {"Content-Type": "application/json"}
+
+    response = requests.request("POST", url, headers=headers, data=payloadJSON,
+                                auth=HTTPBasicAuth(projectID, authToken))
+    print(f"Adding {number} to number group {groupID}")
+    print(response.text)
+
+
 # BULK SEND SECTION BASED ON CSV FROM CUSTOMER DATA DIRECTORY
-def send_in_bulk(fileName, body, nameIntro, optOut):
+# looks in src folder by default - remove folder and allow choose from computer on browser
+def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=None):
     # define results dict for storing client records from csv
     results = {}
 
@@ -57,17 +133,34 @@ def send_in_bulk(fileName, body, nameIntro, optOut):
         nameIntro = f"Hello {results[str(customer)][0]}," if nameIntro else ""
         optOutLanguage = "Reply Stop to Opt Out" if optOut else ""
 
-        # send message
-        message = client.messages.create(
-            from_=fromNumber,
-            body=f"{nameIntro} {body} {optOutLanguage}",
-            to=formattedNumber)
+        if numberGroupID:
+            print("Using number group instead")
+            # send message
+            message = client.messages.create(
+                messaging_service_sid=numberGroupID,
+                body=f"{nameIntro} {body} {optOutLanguage}",
+                to=formattedNumber)
 
-        logging.info(
-            'SID: {}, From: {}, To: {}, Body: {}, Date/Time Sent: {}'.format(message.sid, message.from_, message.to,
-                                                                             message.body, message.date_sent))
-        # sleep for 1 second in order to rate limit at 1 messag per second - adjust based on your approved campaign throughput
-        time.sleep(1)
+            logging.info(
+                'SID: {}, From: {}, To: {}, Body: {}, Date/Time Sent: {}'.format(message.sid, message.from_, message.to,
+                                                                                 message.body, message.date_sent))
+            # sleep for 1 second in order to rate limit at 1 messag per second - adjust based on your approved campaign throughput
+            time.sleep(1)
+
+        else:
+            # send message
+            message = client.messages.create(
+                from_=fromNumber,
+                body=f"{nameIntro} {body} {optOutLanguage}",
+                to=formattedNumber)
+
+            logging.info(
+                'SID: {}, From: {}, To: {}, Body: {}, Date/Time Sent: {}'.format(message.sid, message.from_, message.to,
+                                                                                 message.body, message.date_sent))
+            # sleep for 1 second in order to rate limit at 1 messag per second - adjust based on your approved campaign throughput
+            time.sleep(1)
+        return message.sid
+
 
 def formatNumber(number):
     formattedNumber = "+" + str(number) if "+" not in str(number) else str(number)
@@ -86,13 +179,18 @@ def generateShortenedURL(fullURL):
 # pull message details using SID for alert box
 def pullMessage(sid):
     message = client.messages(sid).fetch()
-    return message.sid, message.from_, message.to, message.body, message.status, message.error_code, message.error_message, message.date_sent, message.direction, message.price,message.price_unit
+    return message.sid, message.from_, message.to, message.body, message.status, message.error_code, message.error_message, message.date_sent, message.direction, message.price, message.price_unit
 
 
-# message history section
-# show history default last 7 days when loading browser page, refresh results every 1 minute on page, click filter page to fill out additional parameters and return messages
+# show message history for last 24 hours by default - use apply button on browser to pass additional parameters
 def getMessageHistory():
-    messages = client.messages.list()
+    today = str(date.today())
+    year = int(today[0:4])
+    mon = int(today[5:7])
+    day = int(today[8:10]) - 1
+
+
+    messages = client.messages.list(date_sent_after=datetime.datetime(year, mon, day, 0, 0, 0))
     d = []
     for record in messages:
         d.append((record.from_, record.to, record.date_sent, record.status, record.sid, record.price,
@@ -108,6 +206,10 @@ def getMessageHistory():
     df = df.sort_values(by='Date', ascending=False)
     print(df.to_string())
 
+
+getMessageHistory()
+
+
 # remove customer row from CSV
 def deleteCustomerDataCSV(folder, number, path=None):
     dir_list = os.listdir(folder)
@@ -115,7 +217,7 @@ def deleteCustomerDataCSV(folder, number, path=None):
     # remove opt out list from CSVs to evaluate
     for file in dir_list:
         if file == 'opted_out_customers.csv':
-             dir_list.pop(dir_list.index(file))
+            dir_list.pop(dir_list.index(file))
 
     numCSVs = len(dir_list)
     i = 0
@@ -156,11 +258,12 @@ def deleteCustomerDataCSV(folder, number, path=None):
 
     return 200
 
+
 # upload CSV from computer and add to customer Data, display available CSVs
 def uploadCSV(path, newTitle):
     # upload file from somewhere on computer, front end will grab path using js library
     # strip whitespace and convert to E164 format
-    df = pd.read_csv(path, header = 0)
+    df = pd.read_csv(path, header=0)
     fileName = newTitle.replace(" ", "_") + '.csv'
     df = df.rename(columns=lambda x: x.strip())
     df['Number'] = df['Number'].apply(formatNumber)
@@ -169,13 +272,13 @@ def uploadCSV(path, newTitle):
     print(df)
     print()
 
-
     # read in CSV to dict where phone number is the key and a list with [first name, last name, opt out date, and file] is the value
     results = {}
     with open('src/opted_out_customers.csv', 'r', encoding='utf-8-sig') as file:
-       reader = csv.DictReader(file)
-       for row in reader:
-            results[row['Number']] = [row['First'.strip()], row['Last'.strip()], row['Opt-Out-Date'.strip()], row['filename'.strip()]]
+        reader = csv.DictReader(file)
+        for row in reader:
+            results[row['Number']] = [row['First'.strip()], row['Last'.strip()], row['Opt-Out-Date'.strip()],
+                                      row['filename'.strip()]]
     print("Opt Out Dict")
     print(str(results))
     print()
@@ -183,8 +286,9 @@ def uploadCSV(path, newTitle):
     # loop through opt out dict and check if the phone number is in the recently uploaded CSV
     for result in results:
         if result in df.values:
-            print(f"The number {result} in your most recent upload is associated with {results[result][0]} {results[result][1]} who opted out on {results[result][2]}. "
-                      f"They were originally uploaded in {results[result][3]}")
+            print(
+                f"The number {result} in your most recent upload is associated with {results[result][0]} {results[result][1]} who opted out on {results[result][2]}. "
+                f"They were originally uploaded in {results[result][3]}")
 
             numTries = 1
             while numTries < 4:
@@ -208,6 +312,7 @@ def uploadCSV(path, newTitle):
 
     print("Finished looping through results")
 
+
 # display all existing CSVs
 def displayCSV(path):
     # print available CSVs
@@ -228,6 +333,7 @@ def displayCSV(path):
         print(results)
     return results
 
+
 # search CSV and return customer record if it exists
 def searchCSV(path, number):
     dir_list = os.listdir(path)
@@ -235,7 +341,7 @@ def searchCSV(path, number):
     # remove opt out list from CSVs to evaluate
     for file in dir_list:
         if file == 'opted_out_customers.csv':
-             dir_list.pop(dir_list.index(file))
+            dir_list.pop(dir_list.index(file))
 
     numCSVs = len(dir_list)
     today = str(date.today())
@@ -276,11 +382,13 @@ def status_callbacks():
 
     if (message_status == "undelivered" or message_status == "failed"):
         message = client.messages(message_sid).fetch()
-        #date_sent = datetime.datetime.strptime(str(message.date_sent), "%Y-%m-%d %H:%M:%S%z")
-        #if date_sent < yesterday:
-        undeliveredArray.append([message_sid, message_status, error_code, message.error_message, message.date_sent, message.to, message.from_, message.body])
+        # date_sent = datetime.datetime.strptime(str(message.date_sent), "%Y-%m-%d %H:%M:%S%z")
+        # if date_sent < yesterday:
+        undeliveredArray.append(
+            [message_sid, message_status, error_code, message.error_message, message.date_sent, message.to,
+             message.from_, message.body])
         df = pd.DataFrame(undeliveredArray, columns=(
-        'Message Sid', 'Message Status', 'Error Code', 'Error Message', 'DateSent', 'To', 'From', 'Body'))
+            'Message Sid', 'Message Status', 'Error Code', 'Error Message', 'DateSent', 'To', 'From', 'Body'))
         df['DateSent'] = pd.to_datetime(df['DateSent'])
         df = df.sort_values(by='DateSent', ascending=False)
         print(df.to_string())
@@ -295,7 +403,6 @@ def inbound():
     client_from = request.values.get('From', None)
     body = message_body.lower().strip()
     i = 0
-
 
     # opt out manager
     if 'stop' in body or 'unsubscribe' in body:
@@ -316,9 +423,8 @@ def inbound():
 
     return client_from
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
+# if __name__ == "__main__":
+#     app.run(debug=True)
 
 # test function calls
 # send_in_bulk('test.csv', "Test from SignalWire", True, True)
@@ -328,3 +434,10 @@ if __name__ == "__main__":
 # getMessageHistory()
 # deleteCustomerDataCSV('src/', '+19721111111', 'src/test.csv')
 # uploadCSV('testing.csv', 'test2')
+# create_number_group('Group1')
+# list_number_groups()
+# add_numbers_to_number_group('ff3ceddf-e1af-46cd-93ee-aaef1c36c30c', '9b530dd0-04ba-49d5-98e8-a3d7a80bee31')
+# add_numbers_to_number_group('+19043445583', '9b530dd0-04ba-49d5-98e8-a3d7a80bee31')
+# list_number_group_members('9b530dd0-04ba-49d5-98e8-a3d7a80bee31')
+# send_in_bulk('test.csv', ' test')
+# send_in_bulk('test.csv', ' test', nameIntro=True, optOut=True, numberGroupID='9b530dd0-04ba-49d5-98e8-a3d7a80bee31')

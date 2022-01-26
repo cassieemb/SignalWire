@@ -1,21 +1,18 @@
 # **Full Service SMS App**
 
-## To Do Next: 
-* set up number group page
-* allow messaging to send from number groups 
-* make message history show past 24 hours by default 
-* how to accept additional filters, maybe use optional parameters and check if they exist?
-* set up fetch function for additional message filters, will implement in history/errors on browser
-
+## To Do Next:
+* accept additional parameters optionally in message history, apply button will implement them 
+* keep track of errors per 24 hour period 
+* keep track of opt outs per 24 hour period 
 
 ### Bulk messaging 
  * **Choose from available customer CSVs, set template, and send out messaging**
-* send from available number group
+* **send from number group**
 
 ### Set up number groups 
-* allow to show all numbers on account 
-* allow to choose numbers and add to number group 
-* show groups with name, associated numbers, sid 
+* **allow to show all numbers on account**
+* **display all number groups, display all number group members**
+* **add a number to a number group** 
     
 
 ### Upload Customer Lists
@@ -33,7 +30,7 @@
 * **decode shortened URLs and redirect to full URL**
 
 ### Message History Section 
-* **by default show all results** 
+* **by default show all results between yesterday and present time** 
 * allow for additional filtering on browser
 * set up to refresh every 2 minutes
 * click sid to view additional details (use fetch function)
@@ -43,7 +40,10 @@
 * do something if error rate gets too high
 * click sid to view additional details (use fetch function)
     
-
+### Fetch Additional Details 
+* In status callback and message history section, allow click on sid to call function 
+  and return additional information about the message via alert box 
+  
 ### Manage opt outs 
 * **monitor inbound messages for stop phrase**
 * **remove people who opt out from subscriber lists**
