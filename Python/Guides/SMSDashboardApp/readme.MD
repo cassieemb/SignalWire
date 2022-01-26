@@ -4,6 +4,8 @@
 * accept additional parameters optionally in message history, apply button will implement them 
 * keep track of errors per 24 hour period 
 * keep track of opt outs per 24 hour period 
+* create alert function that texts? emails? admin if opt out rate or error rate is too high 
+
 
 ### Bulk messaging 
  * **Choose from available customer CSVs, set template, and send out messaging**
