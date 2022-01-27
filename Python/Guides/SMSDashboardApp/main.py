@@ -445,6 +445,19 @@ def inbound():
 
     return client_from
 
+# handle home page requests
+@app.route("/home")
+def home():
+    return render_template('index.html')
+
+# handle customer data page requests
+# handle number groups page requests
+# handle shortened url generator page requests
+# handle text blast page requests
+# handle error center requests
+# handle message history requests
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
