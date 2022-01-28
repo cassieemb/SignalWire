@@ -239,7 +239,7 @@ def deleteCustomerDataCSV(folder, number, path=None):
 
     # remove opt out list from CSVs to evaluate
     for file in dir_list:
-        if file == 'opted_out_customers.csv':
+        if file == 'opt_out_list.csv':
             dir_list.pop(dir_list.index(file))
 
     numCSVs = len(dir_list)
@@ -283,21 +283,21 @@ def deleteCustomerDataCSV(folder, number, path=None):
 
 
 # upload CSV from computer and add to customer Data, display available CSVs
-def uploadCSV(path, newTitle):
+def uploadCSV(path):
     # upload file from somewhere on computer, front end will grab path using js library
     # strip whitespace and convert to E164 format
     df = pd.read_csv(path, header=0)
-    fileName = newTitle.replace(" ", "_") + '.csv'
+    newPath = f"src/{path}"
     df = df.rename(columns=lambda x: x.strip())
     df['Number'] = df['Number'].apply(formatNumber)
-    df.to_csv(f"src/{fileName}", index=False, encoding='utf-8')
+    df.to_csv(newPath, index=False, encoding='utf-8')
     print("Newly uploaded CSV")
     print(df)
     print()
 
     # read in CSV to dict where phone number is the key and a list with [first name, last name, opt out date, and file] is the value
     results = {}
-    with open('src/opted_out_customers.csv', 'r', encoding='utf-8-sig') as file:
+    with open('src/opt_out_list.csv', 'r', encoding='utf-8-sig') as file:
         reader = csv.DictReader(file)
         for row in reader:
             results[row['Number']] = [row['First'.strip()], row['Last'.strip()], row['Opt-Out-Date'.strip()],
@@ -318,7 +318,7 @@ def uploadCSV(path, newTitle):
                 decision = input('Do you want to remove this customer from the data you just uploaded? y/n \n')
 
                 if decision.strip().lower() == 'y':
-                    deleteCustomerDataCSV('src/', result, f"src/{fileName}")
+                    deleteCustomerDataCSV('src/', result, f"src/{path}")
                     break
                 elif decision.strip().lower() == 'n':
                     print('Okay, but remember, ignoring opt outs is bad!')
@@ -334,27 +334,26 @@ def uploadCSV(path, newTitle):
                         numTries += 1
 
     print("Finished looping through results")
+    return newPath
+
 
 
 # display all existing CSVs
 def displayCSV(path):
-    # print available CSVs
+    # show available CSVs and their contents
     dir_list = os.listdir(path)
-    print(dir_list)
     numCSVs = len(dir_list)
-    print(numCSVs)
     i = 0
     results = {}
 
     while i < numCSVs:
-        print(dir_list[i])
+        # print(dir_list[i])
         with open(f"src/{dir_list[i]}", 'r', encoding='utf-8-sig') as file:
             reader = csv.DictReader(file)
             for row in reader:
                 results[row['Number']] = [row['First'], row['Last']]
         i += 1
-        print(results)
-    return results
+    return dir_list
 
 
 # search CSV and return customer record if it exists
@@ -363,7 +362,7 @@ def searchCSV(path, number):
 
     # remove opt out list from CSVs to evaluate
     for file in dir_list:
-        if file == 'opted_out_customers.csv':
+        if file == 'opt_out_list.csv':
             dir_list.pop(dir_list.index(file))
 
     numCSVs = len(dir_list)
@@ -383,6 +382,13 @@ def searchCSV(path, number):
         i += 1
 
     return customerRecord
+
+# grab CSV file and load into customer data table
+def dropdownCSVTable(filename):
+    fileName = f"src/{filename}"
+    data = pd.read_csv(fileName)
+    customerList = list(data.values)
+    return customerList
 
 
 # handle inbound shortened url requests and redirect to full URL
@@ -433,7 +439,7 @@ def inbound():
         print(opt_out_record)
 
         # add to opted out user list
-        with open('src/opted_out_customers.csv', 'a') as f:
+        with open('src/opt_out_list.csv', 'a') as f:
             writer = csv.writer(f)
             while i < len(opt_out_record):
                 writer.writerow(opt_out_record[i])
@@ -450,7 +456,31 @@ def inbound():
 def home():
     return render_template('index.html')
 
-# handle customer data page requests
+# handle customer data home page requests
+@app.route("/customerData")
+def customerData():
+
+    if request.args.get('filename'):
+        fileName = request.args.get('filename')
+
+    else:
+        fileName = 'opt_out_list.csv'
+
+    fileNamePath = f"src/{fileName}"
+    data = pd.read_csv(fileNamePath)
+
+    csvList = displayCSV('src/')
+
+    # return render_template('customerData.html', table=[data.to_html(classes=["table", "table-striped", "table-dark"], index=False)])
+    return render_template('customerData.html', csvs = csvList, table=data.to_html(classes=["table", "table-striped", "table-dark"], index=False))
+
+# handle data upload requests
+@app.route('/uploadFile')
+def uploadFileChoice():
+    filename = request.args.get('filename')
+    print(filename)
+    uploadCSV(filename)
+    return redirect(f"/customerData?filename={filename}", code=302)
 # handle number groups page requests
 # handle shortened url generator page requests
 # handle text blast page requests

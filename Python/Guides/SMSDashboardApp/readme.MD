@@ -1,7 +1,13 @@
 # **Full Service SMS App**
 
 ## To Do Next:
-* start on front end - start from homepage and work outwards 
+* finish file upload - call upload function from flask and reload page 
+* current issue - file upload doesn't pass actual file through url in upload file parameter 
+
+  
+
+* Work on Message History and Error Center front end
+* translate phone numbers with - to e164
 
 -------
 
