@@ -1,14 +1,26 @@
 # **Full Service SMS App**
 
 ## To Do Next:
-* finish file upload - call upload function from flask and reload page 
-* current issue - file upload doesn't pass actual file through url in upload file parameter 
 
-  
+### Shortened URL 
+### Bulk messaging section
+### Number groups section
 
-* Work on Message History and Error Center front end
-* translate phone numbers with - to e164
+### Error history Page 
+- remove all entries more than 48 hours before current time 
+- figure out if worth offering additional filters instead of live stream only 
 
+### Message history 
+* fix sidebar without changing background
+* add progress bar
+* fixed header while scrolling
+
+### Customer Data Page
+* current issue - file upload doesn't pass actual file through url in upload file parameter
+
+### Home page 
+* font is weird 
+* make icons clickable
 -------
 
 ### Bulk Messaging Section
@@ -43,8 +55,7 @@
 
 ### Message History Section 
 * **by default show all results between yesterday and present time** 
-* **allow for additional filtering when specified** 
-* add reload page 
+* **allow for additional filtering when specified**
 * click sid to view additional details (use fetch function)
     
 -------    

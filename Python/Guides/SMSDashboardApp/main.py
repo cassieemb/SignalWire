@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import csv
 import logging
 import short_url
-from datetime import datetime, date
+from datetime import datetime, date, timedelta, timezone
 import time
 import datetime
 import json
@@ -180,6 +180,7 @@ def generateShortenedURL(fullURL):
 # pull message details using SID for alert box
 def pullMessage(sid):
     message = client.messages(sid).fetch()
+
     return message.sid, message.from_, message.to, message.body, message.status, message.error_code, message.error_message, message.date_sent, message.direction, message.price, message.price_unit
 
 
@@ -191,19 +192,20 @@ def getMessageHistory(startDate=None,endDate=None,fromN=None,toN=None):
         today = str(date.today())
         year = int(today[0:4])
         mon = int(today[5:7])
-        day = int(today[8:10]) - 1
+        day = int(today[8:10])
         startDate = datetime.datetime(year, mon, day)
     else:
         year = int(startDate[0:4])
         mon = int(startDate[5:7])
-        day = int(startDate[8:10]) - 1
+        day = int(startDate[8:10])
+
         startDate = datetime.datetime(year, mon, day)
 
     # if end date is passed in, parse into datetime here
     if endDate:
         year = int(endDate[0:4])
         mon = int(endDate[5:7])
-        day = int(endDate[8:10]) - 1
+        day = int(endDate[8:10])
         endDate = datetime.datetime(year, mon, day)
 
     # if from number is passed in, format in E164
@@ -213,25 +215,23 @@ def getMessageHistory(startDate=None,endDate=None,fromN=None,toN=None):
     # if to number is passed in, format in E164
     if toN:
         toN = formatNumber(toN)
-
     messages = client.messages.list(date_sent_after=startDate, date_sent_before=endDate, from_=fromN, to=toN)
 
 
     d = []
     for record in messages:
-        d.append((record.from_, record.to, record.date_sent, record.status, record.sid, record.price,
-                  record.direction))
+        d.append((record.from_, record.to, record.date_sent, record.status, record.sid, record.direction, record.error_message, record.price))
         pullMessage(record.sid)
 
     # format price and sort by most recent date
-    df = pd.DataFrame(d, columns=('From', 'To', 'Date', 'Status', 'SID', 'Price', 'Type'))
+    df = pd.DataFrame(d, columns=('From', 'To', 'Date', 'Status', 'SID', 'Type', 'Message Error', 'Price'))
     df['Price'] = df['Price'].fillna(0)
     df['Price'] = df['Price'].astype(float).round(4)
     df['Price'] = df['Price'].map('${:,.4f}'.format)
     df['Date'] = pd.to_datetime(df['Date'])
     df = df.sort_values(by='Date', ascending=False)
-    print(df.to_string())
-
+    # print(df.to_string())
+    return df
 
 # remove customer row from CSV
 def deleteCustomerDataCSV(folder, number, path=None):
@@ -337,7 +337,6 @@ def uploadCSV(path):
     return newPath
 
 
-
 # display all existing CSVs
 def displayCSV(path):
     # show available CSVs and their contents
@@ -399,33 +398,43 @@ def redirectShortCode(char):
     return redirect(origURL, code=302)
 
 
-# error code center using status callbacks to show failed messages, need to add some sort of time filter to limit results
-# offer additional filters that can be implemented by hitting apply button
-@app.route("/ErrorCenter", methods=['POST'])
+# handle status callbacks
+@app.route("/statusCallbacks", methods=('GET', 'POST'))
 def status_callbacks():
     message_sid = request.values.get('MessageSid', None)
     message_status = request.values.get('MessageStatus', None)
     error_code = request.values.get('ErrorCode', None)
     logging.info('SID: {}, Status: {}, ErrorCode: {}'.format(message_sid, message_status, error_code))
 
+    today = datetime.datetime.now(timezone.utc)
+    two_days_ago = today - timedelta(minutes=2)
+
 
     if (message_status == "undelivered" or message_status == "failed"):
         message = client.messages(message_sid).fetch()
-        print(message.date_sent)
-        undeliveredArray.append(
-            [message_sid, message_status, error_code, message.error_message, message.date_sent, message.to,
+        undeliveredArray.append([message_sid, message_status, error_code, message.error_message, message.date_created, message.date_sent, message.to,
              message.from_, message.body])
+
         df = pd.DataFrame(undeliveredArray, columns=(
-            'Message Sid', 'Message Status', 'Error Code', 'Error Message', 'DateSent', 'To', 'From', 'Body'))
+            'Message Sid', 'Message Status', 'Error Code', 'Error Message', 'DateSent', 'DateCreated', 'To', 'From',
+            'Body'))
         df['DateSent'] = pd.to_datetime(df['DateSent'])
         df = df.sort_values(by='DateSent', ascending=False)
-        print(df.to_string())
+        df.to_csv('failedMessages.csv', index=None)
 
-    return ('', 200)
+    return '200'
+
+# error center for displaying the failed or undelivered messages
+@app.route('/errorCenter', methods=('GET', 'POST'))
+def errorCenter():
+    df = pd.read_csv('failedMessages.csv')
+    table = df.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"])
+
+    return render_template('errorCenter.html', table=table, index=False)
 
 
 # handle inbound messages
-@app.route('/inbound', methods=['POST'])
+@app.route('/inbound', methods=('GET', 'POST'))
 def inbound():
     message_body = request.values.get('Body', None)
     client_from = request.values.get('From', None)
@@ -452,12 +461,12 @@ def inbound():
     return client_from
 
 # handle home page requests
-@app.route("/home")
+@app.route("/home", methods=('GET', 'POST'))
 def home():
     return render_template('index.html')
 
 # handle customer data home page requests
-@app.route("/customerData")
+@app.route("/customerData", methods=('GET', 'POST'))
 def customerData():
 
     if request.args.get('filename'):
@@ -475,17 +484,49 @@ def customerData():
     return render_template('customerData.html', csvs = csvList, table=data.to_html(classes=["table", "table-striped", "table-dark"], index=False))
 
 # handle data upload requests
-@app.route('/uploadFile')
+@app.route('/uploadFile', methods=('GET', 'POST'))
 def uploadFileChoice():
     filename = request.args.get('filename')
     print(filename)
     uploadCSV(filename)
     return redirect(f"/customerData?filename={filename}", code=302)
+
+# handle message history requests
+@app.route('/messageHistory', methods = ['POST', 'GET'])
+def messageHistory():
+    if request.form.get('startDate'):
+        startDate = request.form.get('startDate')
+    else:
+        startDate = None
+
+    if request.form.get('endDate'):
+        endDate = request.form.get('endDate')
+    else:
+        endDate = None
+
+    if request.form.get('from'):
+        fromN = request.form.get('from')
+    else:
+        fromN = None
+
+    if request.form.get('to'):
+        toN = request.form.get('to')
+    else:
+        toN = None
+
+    data = getMessageHistory(startDate=startDate, endDate=endDate, fromN = fromN, toN = toN)
+
+    return render_template('messageHistory.html', table=data.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False))
+
+
+
+# handle error center requests
+
+
+
 # handle number groups page requests
 # handle shortened url generator page requests
 # handle text blast page requests
-# handle error center requests
-# handle message history requests
 
 
 if __name__ == "__main__":

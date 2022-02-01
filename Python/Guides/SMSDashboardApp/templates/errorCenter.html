@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>cass.ie: Customer Data Center</title>
+        <title>cass.ie: Error Center</title>
         <link rel="icon" type="image/x-icon" href="static/swlogo.jpg" />
 
         <!-- Jquery CDN -->
@@ -30,7 +30,7 @@
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
-                                       aria-haspopup="true" aria-expanded="false">Customer Data Center</a>
+                                       aria-haspopup="true" aria-expanded="false">Error Center</a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="/home">Home Page</a>
                                         <div class="dropdown-divider"></div>
@@ -39,7 +39,7 @@
                                         <a class="dropdown-item" href="#!">Shortened URL Generator</a>
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="#!">Text Blasts</a>
-                                        <a class="dropdown-item" href="#!">Error Center</a>
+                                        <a class="dropdown-item" href="/errorCenter">Error Center</a>
                                         <a class="dropdown-item" href="/messageHistory">Message History</a>
                                     </div>
                                 </li>
@@ -48,7 +48,7 @@
         </nav>
 
         <!-- Page Content-->
-        <div class="wrapper d-flex align-items-stretch">
+        <div class="wrapper d-flex align-items-stretch" style="background:#212529;">
 
             <!-- Side Navbar-->
 			<nav id="sidebar">
@@ -59,37 +59,18 @@
                 </div>
 
 				<div class="p-4 pt-5">
-		  		    <h3><a>Customer Data</a></h3>
+		  		    <h3>Error Center</h3>
                     <div class="dropdown-divider"></div>
-	                <ul class="collection">
-                            {% for csv in csvs %}
-                                <li class="collection-item w3-hoverable">
-                                    <a href="/customerData?filename={{csv}}">{{ csv }}</a>
-                                </li>
-                            {% endfor %}
-                    </ul>
-                    <br>
-
-                    <h3>Upload Data</h3>
+                    <h6>Shows all undelivered or failed messages for last 48 hours</h6>
                     <div class="dropdown-divider"></div>
-                    <h6>You can have any amount of columns, but make sure you include ones named First, Last, and Number!</h6>
-                    <br>
-
-                    <form class="md-form" action="/uploadFile">
-                        <div class="file-field">
-                            <div class="btn-md float-left">
-                                <input type="file" name="filename">
-                                <br>
-                                <input type="submit">
-                            </div>
-                        </div>
-                    </form>
+                    <h6>collapse filters to view complete table</h6>
+                    <div class="dropdown-divider"></div>
 
                 </div>
 	        </nav>
 
             <!-- Customer Data Table-->
-            <div class="col-md-12">
+            <div class="col-md-12 table-responsive">
                 <table>
                     {{table | safe }}
                 </table>
@@ -121,5 +102,12 @@
     })(jQuery);
 
     </script>
+
+    <script type="text/javascript">
+        setInterval(function(){
+        window.location.reload(1);
+        }, 60000);
+    </script>
+
     </body>
 </html>

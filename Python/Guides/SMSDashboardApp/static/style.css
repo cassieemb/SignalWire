@@ -1,9 +1,8 @@
 @charset "UTF-8";
 /*!
 * Start Bootstrap - Heroic Features v5.0.4 (https://startbootstrap.com/template/heroic-features)
-* Copyright 2013-2021 Start Bootstrap
-* Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-heroic-features/blob/master/LICENSE)
 */
+
 :root {
   --bs-blue: #0d6efd;
   --bs-indigo: #6610f2;
@@ -47,7 +46,7 @@
   --bs-black-rgb: 0, 0, 0;
   --bs-body-color-rgb: 33, 37, 41;
   --bs-body-bg-rgb: 255, 255, 255;
-  --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --bs-font-sans-serif: sans-serif, "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
   --bs-body-font-family: var(--bs-font-sans-serif);
@@ -72,6 +71,7 @@
 
 body {
   margin: 0;
+  height: 100%
   font-family: var(--bs-body-font-family);
   font-size: var(--bs-body-font-size);
   font-weight: var(--bs-body-font-weight);
@@ -2233,6 +2233,25 @@ progress {
   opacity: 1;
 }
 
+input#phoneT:valid {
+  background-color:#ADC56A;
+}
+input#phoneF:valid {
+  background-color:#ADC56A;
+}
+
+input#phoneT:invalid {
+  background-color:#C5826A;
+}
+input#phoneF:invalid {
+  background-color:#C5826A;
+}
+
+label {
+    margin-bottom: 20px;
+}
+
+
 .form-control:disabled, .form-control[readonly] {
   background-color: #e9ecef;
   opacity: 1;
@@ -4098,16 +4117,21 @@ a[data-toggle="collapse"] {
 
 
 #sidebar {
+
   min-width: 250px;
   max-width: 250px;
   height: 100%;
   min-height: calc(100vh - 50px);
   background: #866ec7;
   color: #fff;
+  margin-top:0;
+  margin-bottom:0;
   -webkit-transition: all 0.3s;
   -o-transition: all 0.3s;
   transition: all 0.3s;
-  position: relative; }
+  position: relative;
+  bottom: 0;
+  }
 
   #sidebar .h6 {
     color: #fff; }
