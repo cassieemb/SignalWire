@@ -42,7 +42,6 @@ def list_account_numbers():
     for record in incoming_phone_numbers:
         numbers[record.phone_number] = record.sid
 
-    print(numbers)
     return numbers
 
 
@@ -66,6 +65,22 @@ def create_number_group(groupName):
     print(f"Creating Number Group - details below")
     print(response.text)
 
+# create a new number group
+def delete_number_group(groupID):
+
+    url = f"https://{spaceURL}/api/relay/rest/number_groups/{groupID}"
+
+    payloads = {}
+
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payloads, auth=HTTPBasicAuth(projectID, authToken))
+    print(response)
+    print(f"Deleting Number Group - details below")
+    print(response.text)
 
 # list number groups
 def list_number_groups():
@@ -76,9 +91,9 @@ def list_number_groups():
     }
 
     response = requests.request("GET", url, headers=headers, auth=HTTPBasicAuth(projectID, authToken))
-    print(f"Listing number groups - details below")
     response_json = response.json()['data']
-    print(response_json)
+
+    # print(response_json)
     return response_json
 
 
@@ -91,10 +106,14 @@ def list_number_group_members(groupID):
     }
 
     response = requests.request("GET", url, headers=headers, auth=HTTPBasicAuth(projectID, authToken))
-    print(f"Listing number group members - details below")
     response_json = response.json()['data']
-    print(response_json)
-    return response_json
+
+    groupMembers = []
+    for response in response_json:
+        memberDict = response['phone_number']
+        groupMembers.append(memberDict)
+
+    return groupMembers
 
 
 # add a number to a number group
@@ -480,8 +499,48 @@ def customerData():
 
     csvList = displayCSV('src/')
 
-    # return render_template('customerData.html', table=[data.to_html(classes=["table", "table-striped", "table-dark"], index=False)])
     return render_template('customerData.html', csvs = csvList, table=data.to_html(classes=["table", "table-striped", "table-dark"], index=False))
+
+# handle number group page requests
+@app.route('/numberGroups', methods=('GET', 'POST'))
+def numberGroups():
+
+    # handle add number to number group requests
+    if request.args.get('numbers'):
+        numbers = request.args.getlist('numbers')
+
+        if request.args.get('chosenGroup'):
+            groupID = request.args.get('chosenGroup')
+
+            for number in numbers:
+                add_numbers_to_number_group(number, groupID)
+
+    # handle delete number group requests
+    if request.args.get('delGroup'):
+        delete_number_group(request.args.get('delGroup'))
+
+    # handle create new group requests
+    if request.args.get('newGroupName'):
+        create_number_group(request.args.get('newGroupName'))
+
+    # load specific number group results
+    if request.args.get('id'):
+        id = request.args.get('id')
+        memberData = json.dumps(list_number_group_members(id))
+        data = pd.read_json(memberData)
+        group_table = data.to_html(classes=["table", "table-striped", "table-dark"], index=False)
+
+    # load empty table
+    else:
+        d = []
+        data = pd.DataFrame(d, columns=('id', 'name', 'number', 'capabilities'))
+        group_table = data.to_html(classes=["table", "table-striped", "table-dark"], index=False)
+
+    # load available number groups and account numbers
+    groups = list_number_groups()
+    numbers = list_account_numbers()
+
+    return render_template('numberGroups.html', groups = groups, table = group_table, numbers = numbers)
 
 # handle data upload requests
 @app.route('/uploadFile', methods=('GET', 'POST'))
@@ -520,31 +579,5 @@ def messageHistory():
 
 
 
-# handle error center requests
-
-
-
-# handle number groups page requests
-# handle shortened url generator page requests
-# handle text blast page requests
-
-
 if __name__ == "__main__":
     app.run(debug=True)
-
-# test function calls
-# send_in_bulk('test.csv', "Test from SignalWire", True, True)
-# uploadCSV('/Users/cassiebowles/Documents/SignalWire/Python/Snippets/src/bulk_sms.csv', 'Tickets On Sale')
-# displayCSV("/Users/cassiebowles/Documents/SignalWire/Python/Guides/SMSDashboardApp/src")
-# generateShortenedURL('https://stackoverflow.com/questions/1497504/how-to-make-unique-short-url-with-python')
-# getMessageHistory()
-# deleteCustomerDataCSV('src/', '+19721111111', 'src/test.csv')
-# uploadCSV('testing.csv', 'test2')
-# create_number_group('Group1')
-# list_number_groups()
-# add_numbers_to_number_group('ff3ceddf-e1af-46cd-93ee-aaef1c36c30c', '9b530dd0-04ba-49d5-98e8-a3d7a80bee31')
-# add_numbers_to_number_group('+19043445583', '9b530dd0-04ba-49d5-98e8-a3d7a80bee31')
-# list_number_group_members('9b530dd0-04ba-49d5-98e8-a3d7a80bee31')
-# send_in_bulk('test.csv', ' test')
-# send_in_bulk('test.csv', ' test', nameIntro=True, optOut=True, numberGroupID='9b530dd0-04ba-49d5-98e8-a3d7a80bee31')
-# getMessageHistory(startDate='2022-01-10', endDate='2022-01-22', fromN='12022358941', toN='12147903161')

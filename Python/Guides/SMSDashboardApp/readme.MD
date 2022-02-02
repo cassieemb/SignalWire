@@ -1,10 +1,11 @@
 # **Full Service SMS App**
 
 ## To Do Next:
+- figure out why delete number groups by ID is returning 404 but same thing works on Postman 
+
 
 ### Shortened URL 
 ### Bulk messaging section
-### Number groups section
 
 ### Error history Page 
 - remove all entries more than 48 hours before current time 
@@ -18,9 +19,16 @@
 ### Customer Data Page
 * current issue - file upload doesn't pass actual file through url in upload file parameter
 
+### Number Groups Section 
+- fix styling of page - change top to toggle where correct div only shows when toggled?
+- refresh page at number group if new group is created
+- refresh page at number group if numbers are added to group 
+- change h3 to change if group is empty or if none is selected 
+
 ### Home page 
 * font is weird 
 * make icons clickable
+make everything look cleaner and adjust color palettes
 -------
 
 ### Bulk Messaging Section
