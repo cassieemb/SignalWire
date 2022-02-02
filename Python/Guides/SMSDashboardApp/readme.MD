@@ -1,6 +1,6 @@
 # **Full Service SMS App**
 
-## To Do Next:
+## WorkList
 - figure out why delete number groups by ID is returning 404 but same thing works on Postman 
 
 
@@ -16,6 +16,7 @@
 * add progress bar
 * fixed header while scrolling
 
+
 ### Customer Data Page
 * current issue - file upload doesn't pass actual file through url in upload file parameter
 
@@ -26,10 +27,12 @@
 - change h3 to change if group is empty or if none is selected 
 
 ### Home page 
-* font is weird 
-* make icons clickable
-make everything look cleaner and adjust color palettes
--------
+- font is weird 
+- make icons clickable
+- make everything look cleaner and adjust color palettes
+  
+## Core pieces of application
+
 
 ### Bulk Messaging Section
 * **Choose from available customer CSVs, set template, and send out messaging**
