@@ -24,9 +24,6 @@ spaceURL = os.getenv('SIGNALWIRE_SPACE')
 fromNumber = os.getenv('SIGNALWIRE_FROM_NUMBER')
 hostName = os.getenv('SIGNALWIRE_HOST_NAME')
 
-# dictionary of shortened URLs that can be displayed
-shortenedUrls = {}
-
 # error center variables
 undeliveredArray = []
 
@@ -77,7 +74,7 @@ def delete_number_group(groupID):
         "Content-Type": "application/json"
     }
 
-    response = requests.request("POST", url, headers=headers, data=payloads, auth=HTTPBasicAuth(projectID, authToken))
+    response = requests.request("DELETE", url, headers=headers, data=payloads, auth=HTTPBasicAuth(projectID, authToken))
     print(response)
     print(f"Deleting Number Group - details below")
     print(response.text)
@@ -187,14 +184,26 @@ def formatNumber(number):
     return str(formattedNumber)
 
 
-# generate shortened URL using encoding and store in dictionary
+# generate shortened URL using encoding and store in CSV
 def generateShortenedURL(fullURL):
-    # generate shortened URL from full URL
+   # read in csv using pandas
+    shortenedUrls = pd.read_csv('shortUrls.csv')
     object_id = len(shortenedUrls)
-    shortened_url = f"{hostName}sc/{short_url.encode_url(object_id, min_length=6)}"
-    # store in shortened URL dictionary
-    shortenedUrls[shortened_url] = fullURL
 
+    shortened_url = f"{hostName}sc/{short_url.encode_url(object_id, min_length=6)}"
+    shortenedUrls.loc[len(shortenedUrls.index)] = [fullURL, shortened_url, 'Not Used Yet']
+    shortenedUrls.to_csv('shortUrls.csv', index=None)
+    return shortened_url
+
+# delete shortened URL from CSV
+def deleteShortenedURL(fullURL):
+   # read in csv using pandas
+    shortenedUrls = pd.read_csv('shortUrls.csv')
+
+    # delete row with matching fullURL
+    shortenedUrls.drop(shortenedUrls[shortenedUrls['Full URL'] == fullURL].index, inplace=True)
+    shortenedUrls.to_csv('shortUrls.csv', index=None)
+    return 'shortened URL deleted'
 
 # pull message details using SID for alert box
 def pullMessage(sid):
@@ -413,8 +422,14 @@ def dropdownCSVTable(filename):
 @app.route("/sc/<char>", methods=('GET', 'POST'))
 def redirectShortCode(char):
     decoded_id = short_url.decode_url(char)
-    origURL = list(shortenedUrls.values())[decoded_id]
-    return redirect(origURL, code=302)
+    print(decoded_id)
+    shortenedUrls = pd.read_csv('shortUrls.csv')
+    fullURL = shortenedUrls.loc[decoded_id,'Full URL']
+    shortenedUrls.loc[decoded_id, 'Last Clicked'] = datetime.date.today()
+    shortenedUrls.to_csv('shortUrls.csv', index=None)
+
+    return redirect(fullURL, code=302)
+
 
 
 # handle status callbacks
@@ -577,7 +592,24 @@ def messageHistory():
 
     return render_template('messageHistory.html', table=data.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False))
 
+# handle url shortener
+@app.route('/shortUrls', methods = ['POST', 'GET'])
+def shortenedURLs():
+    # generate new shortened URL
+    if request.args.get('fullURL'):
+        fullURL = request.args.get('fullURL')
+        generateShortenedURL(fullURL)
 
+    # delete shortened URL
+    if request.args.get('delURL'):
+        delURL = request.args.get('delURL')
+        deleteShortenedURL(delURL)
+
+    data = pd.read_csv('shortUrls.csv')
+    urls = data['Full URL'].tolist()
+    print(urls)
+
+    return render_template('urlShortener.html', table = data.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False), urls = urls)
 
 if __name__ == "__main__":
     app.run(debug=True)
