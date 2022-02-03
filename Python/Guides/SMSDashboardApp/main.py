@@ -60,7 +60,7 @@ def create_number_group(groupName):
     response = requests.request("POST", url, headers=headers, data=payloadJSON,
                                 auth=HTTPBasicAuth(projectID, authToken))
     print(f"Creating Number Group - details below")
-    print(response.text)
+    return response.json()['id']
 
 # create a new number group
 def delete_number_group(groupID):
@@ -519,7 +519,7 @@ def customerData():
 # handle number group page requests
 @app.route('/numberGroups', methods=('GET', 'POST'))
 def numberGroups():
-
+    h4 = ''
     # handle add number to number group requests
     if request.args.get('numbers'):
         numbers = request.args.getlist('numbers')
@@ -530,32 +530,51 @@ def numberGroups():
             for number in numbers:
                 add_numbers_to_number_group(number, groupID)
 
+            return redirect(f"/numberGroups?id={groupID}")
+
     # handle delete number group requests
     if request.args.get('delGroup'):
         delete_number_group(request.args.get('delGroup'))
 
     # handle create new group requests
     if request.args.get('newGroupName'):
-        create_number_group(request.args.get('newGroupName'))
-
-    # load specific number group results
-    if request.args.get('id'):
-        id = request.args.get('id')
-        memberData = json.dumps(list_number_group_members(id))
-        data = pd.read_json(memberData)
-        group_table = data.to_html(classes=["table", "table-striped", "table-dark"], index=False)
-
-    # load empty table
-    else:
-        d = []
-        data = pd.DataFrame(d, columns=('id', 'name', 'number', 'capabilities'))
-        group_table = data.to_html(classes=["table", "table-striped", "table-dark"], index=False)
+        ngID = create_number_group(request.args.get('newGroupName'))
+        return redirect(f"/numberGroups?id={ngID}")
 
     # load available number groups and account numbers
     groups = list_number_groups()
     numbers = list_account_numbers()
 
-    return render_template('numberGroups.html', groups = groups, table = group_table, numbers = numbers)
+    # load empty table and set h4 to alert if there are no number groups
+    if (len(groups) == 0):
+        h4 = "You don't have any number groups! Create a group and then add numbers to it."
+        d = []
+        data = pd.DataFrame(d, columns=('id', 'name', 'number', 'capabilities'))
+        group_table = data.to_html(classes=["table", "table-striped", "table-dark"], index=False)
+
+    # load specific number group results
+    elif request.args.get('id'):
+
+        id = request.args.get('id')
+        memberData = json.dumps(list_number_group_members(id))
+        data = pd.read_json(memberData)
+        group_table = data.to_html(classes=["table", "table-striped", "table-dark"], index=False)
+
+        if len(data) == 0:
+            h4 = 'This number group is empty! Add numbers to it now to see them below.'
+            d = []
+            data = pd.DataFrame(d, columns=('id', 'name', 'number', 'capabilities'))
+            group_table = data.to_html(classes=["table", "table-striped", "table-dark"], index=False)
+
+    # load empty table and set h4 to direct to click a number group
+    else:
+        d = []
+        data = pd.DataFrame(d, columns=('id', 'name', 'number', 'capabilities'))
+        group_table = data.to_html(classes=["table", "table-striped", "table-dark"], index=False)
+        h4 = "Click a number group from the left to see the numbers it contains below."
+
+
+    return render_template('numberGroups.html', groups = groups, table = group_table, numbers = numbers, h4 = h4)
 
 # handle data upload requests
 @app.route('/uploadFile', methods=('GET', 'POST'))

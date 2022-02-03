@@ -1,7 +1,4 @@
 @charset "UTF-8";
-/*!
-* Start Bootstrap - Heroic Features v5.0.4 (https://startbootstrap.com/template/heroic-features)
-*/
 
 :root {
   --bs-blue: #0d6efd;
@@ -55,6 +52,11 @@
   --bs-body-line-height: 1.5;
   --bs-body-color: #212529;
   --bs-body-bg: #fff;
+  --bs-font-
+}
+
+body {
+font-family: sans-serif;
 }
 
 *,
