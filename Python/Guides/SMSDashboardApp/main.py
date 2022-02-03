@@ -134,7 +134,7 @@ def add_numbers_to_number_group(number, groupID):
 
 # BULK SEND SECTION BASED ON CSV FROM CUSTOMER DATA DIRECTORY
 # looks in src folder by default - remove folder and allow choose from computer on browser
-def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=None):
+def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=None, fromNumber=None):
     # define results dict for storing client records from csv
     results = {}
 
@@ -191,7 +191,7 @@ def generateShortenedURL(fullURL):
     object_id = len(shortenedUrls)
 
     shortened_url = f"{hostName}sc/{short_url.encode_url(object_id, min_length=6)}"
-    shortenedUrls.loc[len(shortenedUrls.index)] = [fullURL, shortened_url, 'Not Used Yet']
+    shortenedUrls.loc[len(shortenedUrls.index)] = [fullURL, shortened_url, datetime.date.today(), 'Not Used Yet']
     shortenedUrls.to_csv('shortUrls.csv', index=None)
     return shortened_url
 
@@ -607,9 +607,32 @@ def shortenedURLs():
 
     data = pd.read_csv('shortUrls.csv')
     urls = data['Full URL'].tolist()
-    print(urls)
 
     return render_template('urlShortener.html', table = data.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False), urls = urls)
+
+# handle  bulk messaging
+@app.route('/textBlasts', methods = ['POST', 'GET'])
+def bulkSend():
+    csvList = displayCSV('src/')
+    groups = list_number_groups()
+    numbers = list_account_numbers()
+
+    body = request.args.get('body')
+    filename = request.args.get('filename')
+    optOut = request.args.get('optOut')
+    nameIntro = request.args.get('nameIntro')
+    fromNumber = request.args.get('fromNumber')
+    groupID = request.args.get('groupID')
+
+    print(body)
+    print(filename)
+    print(optOut)
+    print(nameIntro)
+    print(fromNumber)
+    print(groupID)
+
+
+    return render_template('bulkSend.html', csvs=csvList, groups=groups, numbers=numbers)
 
 if __name__ == "__main__":
     app.run(debug=True)

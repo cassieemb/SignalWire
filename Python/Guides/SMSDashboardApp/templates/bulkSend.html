@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>cass.ie: Bulk Messaging</title>
+        <link rel="icon" type="image/x-icon" href="static/swlogo.jpg" />
+
+        <!-- Jquery CDN -->
+        <script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+        <!-- Bootstrap Core CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet" />
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet"  type="text/css" href="{{url_for('static', filename='style.css')}}">
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script type="text/javascript" src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+    </head>
+    <body>
+        <!-- Responsive navbar-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container px-lg-5">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
+                                       aria-haspopup="true" aria-expanded="false">Shortened URL Generator</a>
+                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                        <a class="dropdown-item" href="/home">Home Page</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="/customerData">Customer Data</a>
+                                        <a class="dropdown-item" href="/numberGroups">Number Groups</a>
+                                        <a class="dropdown-item" href="/shortUrls">Shortened URL Generator</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#!">Text Blasts</a>
+                                        <a class="dropdown-item" href="/errorCenter">Error Center</a>
+                                        <a class="dropdown-item" href="/messageHistory">Message History</a>
+                                    </div>
+                                </li>
+                    </ul>
+                </div>
+        </nav>
+
+        <!-- Page Content-->
+        <div class="card card-4">
+                <div class="card-body">
+                    <h2 class="title">Customize your Text Blast Below!</h2>
+                    <form action="/textBlasts">
+                                <label for="selectData">
+                                    Select from uploaded customer data sheets:
+                                    <select class="form-control" id="selectData" name="filename">
+                                       {% for csv in csvs %}
+                                        {% if csv != 'opt_out_list.csv' %}
+                                            <option value="{{csv}}">
+                                                {{ csv }}
+                                            </option>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                                <br>
+                                <br>
+
+                                <label for="enterTemplate">
+                                    Enter message body:
+                                    <input type="text" id="enterTemplate" name="body">
+                                </label>
+                                <br>
+                                <br>
+
+
+                                <label>
+                                    <input type="radio" onclick="javascript:displayCorrectSelect();" id="checkAccountNum" name="selectSendType"/> Send from Project Number
+                                    <input type="radio" onclick="javascript:displayCorrectSelect();" id="checkNumGroup" name="selectSendType" />Send from Number Group
+                                    <br>
+
+                                    <div id="showFromNums" style="display:none">
+                                        <select class="form-control" id="chooseFromNumber" name="fromNumber" >
+                                            {% for dict_item in numbers %}
+                                                <option value="{{dict_item}}">
+                                                    {{ dict_item }}
+                                                </option>
+                                            {% endfor %}
+                                    </select>
+                                    </div>
+
+                                    <div id="showNumGroups" style="display:none">
+                                        <select class="form-control" id="chooseNumGroups" name="groupID">
+                                            {% for dict_item in groups %}
+                                                <option value="{{dict_item['id']}}">
+                                                    {{ dict_item['name'] }}
+                                                </option>
+                                            {% endfor %}
+                                    </select>
+                                    </div>
+
+                                </label>
+
+                                <br>
+
+                                <label>
+                                    Would you like opt out added automatically to your message?
+                                    Ex: {message template} Reply stop to opt out
+                                    <input type="radio"  id="includeOptOut" name="optOut"/> True
+                                    <input type="radio"  id="noOptOut" name="optOut" />False
+                                    <br>
+
+                                </label>
+
+                                <br>
+
+                                <label>
+                                    Would you like a name intro appended to the beginning of your message?
+                                    Ex: Hello, {name}! {template starts here}
+                                    <input type="radio"  id="includeNameIntro" name="nameIntro"/> True
+                                    <input type="radio"  id="nonameIntro" name="nameIntro" />False
+                                    <br>
+
+                                </label>
+
+                                <br>
+
+                                <input type="submit" value="Submit">
+                    </form>
+                </div>
+        </div>
+
+        <script type="text/javascript">
+
+function displayCorrectSelect() {
+    if (document.getElementById('checkNumGroup').checked) {
+        document.getElementById('showNumGroups').style.display = 'block';
+        document.getElementById('showFromNums').style.display = 'none';
+    }
+    else if (document.getElementById('checkAccountNum').checked) {
+        document.getElementById('showFromNums').style.display = 'block';
+        document.getElementById('showNumGroups').style.display = 'none';
+    }
+    else{
+    }
+}
+
+</script>
+    </body>
+</html>

@@ -1,10 +1,12 @@
 # **Full Service SMS App**
 
 ## WorkList
-- work on bulk messaging section
-
+- don't allow submit if body is empty or radio boxes not selected
+- radio button is sending 'on' even when off
+- only send the selected element 
 
 ### Bulk messaging section
+- add an alert when bulk send is done with amount of messages sent and time elapsed
 
 ### Error history Page 
 - remove all entries more than 48 hours before current time 
