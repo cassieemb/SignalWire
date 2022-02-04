@@ -21,7 +21,6 @@ load_dotenv()
 projectID = os.getenv('SIGNALWIRE_PROJECT')
 authToken = os.getenv('SIGNALWIRE_TOKEN')
 spaceURL = os.getenv('SIGNALWIRE_SPACE')
-fromNumber = os.getenv('SIGNALWIRE_FROM_NUMBER')
 hostName = os.getenv('SIGNALWIRE_HOST_NAME')
 
 # error center variables
@@ -133,7 +132,6 @@ def add_numbers_to_number_group(number, groupID):
 
 
 # BULK SEND SECTION BASED ON CSV FROM CUSTOMER DATA DIRECTORY
-# looks in src folder by default - remove folder and allow choose from computer on browser
 def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=None, fromNumber=None):
     # define results dict for storing client records from csv
     results = {}
@@ -144,14 +142,15 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
         for row in reader:
             results[row['Number']] = [row['First'], row['Last']]
 
-    for customer in results:
-        # change formatted number to E164, change nameIntro to Hello Name if true, change optOutLanuage to reply stop to opt out if true
-        formattedNumber = "+" + customer if "+" not in customer else customer
-        nameIntro = f"Hello {results[str(customer)][0]}," if nameIntro else ""
-        optOutLanguage = "Reply Stop to Opt Out" if optOut else ""
+    # if using number group to send
+    if numberGroupID:
+        for customer in results:
+            # change formatted number to E164, change nameIntro to Hello Name if true, change optOutLanuage to reply stop to opt out if true
+            formattedNumber = "+" + customer if "+" not in customer else customer
+            nameIntro = f"Hello {results[str(customer)][0]}," if nameIntro else ""
+            optOutLanguage = "Reply Stop to Opt Out" if optOut else ""
 
-        if numberGroupID:
-            print("Using number group instead")
+
             # send message
             message = client.messages.create(
                 messaging_service_sid=numberGroupID,
@@ -160,11 +159,19 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
 
             logging.info(
                 'SID: {}, From: {}, To: {}, Body: {}, Date/Time Sent: {}'.format(message.sid, message.from_, message.to,
-                                                                                 message.body, message.date_sent))
+                                                                             message.body, message.date_sent))
             # sleep for 1 second in order to rate limit at 1 messag per second - adjust based on your approved campaign throughput
             time.sleep(1)
 
-        else:
+    # if using one account number to send
+    else:
+        for customer in results:
+            # change formatted number to E164, change nameIntro to Hello Name if true, change optOutLanuage to reply stop to opt out if true
+            formattedNumber = "+" + customer if "+" not in customer else customer
+            nameIntro = f"Hello {results[str(customer)][0]}," if nameIntro else ""
+            optOutLanguage = "Reply Stop to Opt Out" if optOut else ""
+
+
             # send message
             message = client.messages.create(
                 from_=fromNumber,
@@ -173,11 +180,11 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
 
             logging.info(
                 'SID: {}, From: {}, To: {}, Body: {}, Date/Time Sent: {}'.format(message.sid, message.from_, message.to,
-                                                                                 message.body, message.date_sent))
+                                                                             message.body, message.date_sent))
             # sleep for 1 second in order to rate limit at 1 messag per second - adjust based on your approved campaign throughput
             time.sleep(1)
-        return message.sid
 
+    return len(results)
 
 def formatNumber(number):
     formattedNumber = "+" + str(number) if "+" not in str(number) else str(number)
@@ -210,7 +217,6 @@ def pullMessage(sid):
     message = client.messages(sid).fetch()
 
     return message.sid, message.from_, message.to, message.body, message.status, message.error_code, message.error_message, message.date_sent, message.direction, message.price, message.price_unit
-
 
 # show message history for last 24 hours by default - use apply button on browser to pass additional parameters
 def getMessageHistory(startDate=None,endDate=None,fromN=None,toN=None):
@@ -309,7 +315,6 @@ def deleteCustomerDataCSV(folder, number, path=None):
 
     return 200
 
-
 # upload CSV from computer and add to customer Data, display available CSVs
 def uploadCSV(path):
     # upload file from somewhere on computer, front end will grab path using js library
@@ -364,7 +369,6 @@ def uploadCSV(path):
     print("Finished looping through results")
     return newPath
 
-
 # display all existing CSVs
 def displayCSV(path):
     # show available CSVs and their contents
@@ -381,7 +385,6 @@ def displayCSV(path):
                 results[row['Number']] = [row['First'], row['Last']]
         i += 1
     return dir_list
-
 
 # search CSV and return customer record if it exists
 def searchCSV(path, number):
@@ -417,7 +420,6 @@ def dropdownCSVTable(filename):
     customerList = list(data.values)
     return customerList
 
-
 # handle inbound shortened url requests and redirect to full URL
 @app.route("/sc/<char>", methods=('GET', 'POST'))
 def redirectShortCode(char):
@@ -429,8 +431,6 @@ def redirectShortCode(char):
     shortenedUrls.to_csv('shortUrls.csv', index=None)
 
     return redirect(fullURL, code=302)
-
-
 
 # handle status callbacks
 @app.route("/statusCallbacks", methods=('GET', 'POST'))
@@ -636,20 +636,28 @@ def bulkSend():
     groups = list_number_groups()
     numbers = list_account_numbers()
 
-    body = request.args.get('body')
-    filename = request.args.get('filename')
-    optOut = request.args.get('optOut')
-    nameIntro = request.args.get('nameIntro')
-    fromNumber = request.args.get('fromNumber')
-    groupID = request.args.get('groupID')
+    if request.args.get('body'):
+        body = request.args.get('body')
+        filename = request.args.get('filename')
 
-    print(body)
-    print(filename)
-    print(optOut)
-    print(nameIntro)
-    print(fromNumber)
-    print(groupID)
+        if request.args.get('optOut'):
+            optOut = request.args.get('optOut')
+        else:
+            optOut = False
 
+        if request.args.get('nameIntro'):
+            nameIntro = request.args.get('nameIntro')
+        else:
+            nameIntro = False
+
+        if request.args.get('fromNumber') != None:
+            fromNumber = request.args.get('fromNumber')
+            groupID = None
+        else:
+            fromNumber = None
+            groupID = request.args.get('groupID')
+
+        send_in_bulk(filename, body, nameIntro, optOut, groupID, fromNumber)
 
     return render_template('bulkSend.html', csvs=csvList, groups=groups, numbers=numbers)
 

@@ -22,6 +22,23 @@
 
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 
+        <style>
+        formdiv {
+            box-sizing: border-box;
+            width: 100%;
+            border: 100px solid black;
+            float: left;
+            align-content: center;
+            align-items: center;
+
+           }
+
+            form {
+                margin: auto;
+                width: 600px;
+
+        </style>
+
     </head>
     <body>
         <!-- Responsive navbar-->
@@ -48,10 +65,10 @@
         </nav>
 
         <!-- Page Content-->
-        <div class="card card-4">
-                <div class="card-body">
-                    <h2 class="title">Customize your Text Blast Below!</h2>
-                    <form action="/textBlasts">
+        <div id="main">
+            <div id="first">
+                    <h2 style="text-align: center;" class="title">Customize your Text Blast Below!</h2>
+                    <form name='prepareBulkMsg' action="/textBlasts" onsubmit="return validateForm()">
                                 <label for="selectData">
                                     Select from uploaded customer data sheets:
                                     <select class="form-control" id="selectData" name="filename">
@@ -75,12 +92,12 @@
                                 <br>
 
                                 <label>
-                                    <input type="radio" onclick="javascript:displayCorrectSelect();" id="checkAccountNum" name="selectSendType"/> Send from Project Number
+                                    <input type="radio" onclick="javascript:displayCorrectSelect();" id="checkAccountNum" name="selectSendType" checked/> Send from Project Number
                                     <input type="radio" onclick="javascript:displayCorrectSelect();" id="checkNumGroup" name="selectSendType" />Send from Number Group
                                     <br>
 
-                                    <div id="showFromNums" style="display:none">
-                                        <select class="form-control" id="chooseFromNumber" name="fromNumber" >
+                                    <div id="showFromNums">
+                                        <select class="form-control" id="chooseFromNumber" name="fromNumber">
                                             {% for dict_item in numbers %}
                                                 <option value="{{dict_item}}">
                                                     {{ dict_item }}
@@ -106,8 +123,7 @@
                                 <label>
                                     Would you like opt out added automatically to your message?
                                     Ex: {message template} Reply stop to opt out
-                                    <input type="radio"  id="includeOptOut" name="optOut"/> True
-                                    <input type="radio"  id="noOptOut" name="optOut" />False
+                                    <input type="radio"  id="includeOptOut" name="optOut"/> Yes
                                     <br>
 
                                 </label>
@@ -116,9 +132,8 @@
 
                                 <label>
                                     Would you like a name intro appended to the beginning of your message?
-                                    Ex: Hello, {name}! {template starts here}
-                                    <input type="radio"  id="includeNameIntro" name="nameIntro"/> True
-                                    <input type="radio"  id="nonameIntro" name="nameIntro" />False
+                                    Ex: Hello {name}, {template starts here}
+                                    <input type="radio"  id="includeNameIntro" name="nameIntro"/> Yes
                                     <br>
 
                                 </label>
@@ -136,15 +151,40 @@ function displayCorrectSelect() {
     if (document.getElementById('checkNumGroup').checked) {
         document.getElementById('showNumGroups').style.display = 'block';
         document.getElementById('showFromNums').style.display = 'none';
+        document.getElementById('chooseFromNumber').value = 'none';
     }
     else if (document.getElementById('checkAccountNum').checked) {
         document.getElementById('showFromNums').style.display = 'block';
         document.getElementById('showNumGroups').style.display = 'none';
+        document.getElementById('chooseNumGroups').value = 'none';
     }
     else{
     }
 }
 
 </script>
+        <script type="text/javascript">
+            function validateForm(){
+
+            var dataSheet = document.forms["prepareBulkMsg"]['filename'];
+            var body = document.forms["prepareBulkMsg"]['body'];
+
+
+            if (dataSheet.value == ''){
+            window.alert("Please select a customer data sheet.")
+            dataSheet.focus();
+            return false;
+            }
+
+            if (body.value.trim().length == ''){
+            window.alert("Please enter a message body.")
+            body.focus();
+            return false;
+            }
+
+            return true;
+            }
+        </script>
+
     </body>
 </html>
