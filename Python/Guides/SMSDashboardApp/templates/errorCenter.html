@@ -66,6 +66,27 @@
                     <h6>collapse filters to view complete table</h6>
                     <div class="dropdown-divider"></div>
 
+                    <form action="/errorCenter" method="POST" id="applyFilters">
+                        <label for="status">
+                            Delivery Status:
+                            <select name="status" id="status">
+                                <option value="undelivered" selected>Undelivered</option>
+                                <option value="failed">Failed</option>
+                            </select>
+                        </label>
+
+                        <label for="DateSentAfter">
+                            Date Sent After:
+                            <input type="date" name="DateSentAfter" id="DateSentAfter">
+                        </label>
+
+                        <label for="DateSentBefore">
+                            Date Sent Before:
+                            <input type="date" name="DateSentBefore" id="DateSentBefore">
+                        </label>
+
+                        <button type="submit" class="btn btn-light" form="applyFilters">Apply Filters</button>
+                    </form>
                 </div>
 	        </nav>
 

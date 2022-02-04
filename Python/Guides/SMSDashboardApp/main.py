@@ -61,13 +61,12 @@ def create_number_group(groupName):
     print(f"Creating Number Group - details below")
     return response.json()['id']
 
+
 # create a new number group
 def delete_number_group(groupID):
-
     url = f"https://{spaceURL}/api/relay/rest/number_groups/{groupID}"
 
     payloads = {}
-
 
     headers = {
         "Content-Type": "application/json"
@@ -77,6 +76,7 @@ def delete_number_group(groupID):
     print(response)
     print(f"Deleting Number Group - details below")
     print(response.text)
+
 
 # list number groups
 def list_number_groups():
@@ -150,7 +150,6 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
             nameIntro = f"Hello {results[str(customer)][0]}," if nameIntro else ""
             optOutLanguage = "Reply Stop to Opt Out" if optOut else ""
 
-
             # send message
             message = client.messages.create(
                 messaging_service_sid=numberGroupID,
@@ -159,7 +158,7 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
 
             logging.info(
                 'SID: {}, From: {}, To: {}, Body: {}, Date/Time Sent: {}'.format(message.sid, message.from_, message.to,
-                                                                             message.body, message.date_sent))
+                                                                                 message.body, message.date_sent))
             # sleep for 1 second in order to rate limit at 1 messag per second - adjust based on your approved campaign throughput
             time.sleep(1)
 
@@ -171,7 +170,6 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
             nameIntro = f"Hello {results[str(customer)][0]}," if nameIntro else ""
             optOutLanguage = "Reply Stop to Opt Out" if optOut else ""
 
-
             # send message
             message = client.messages.create(
                 from_=fromNumber,
@@ -180,11 +178,12 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
 
             logging.info(
                 'SID: {}, From: {}, To: {}, Body: {}, Date/Time Sent: {}'.format(message.sid, message.from_, message.to,
-                                                                             message.body, message.date_sent))
+                                                                                 message.body, message.date_sent))
             # sleep for 1 second in order to rate limit at 1 messag per second - adjust based on your approved campaign throughput
             time.sleep(1)
 
     return len(results)
+
 
 def formatNumber(number):
     formattedNumber = "+" + str(number) if "+" not in str(number) else str(number)
@@ -193,7 +192,7 @@ def formatNumber(number):
 
 # generate shortened URL using encoding and store in CSV
 def generateShortenedURL(fullURL):
-   # read in csv using pandas
+    # read in csv using pandas
     shortenedUrls = pd.read_csv('shortUrls.csv')
     object_id = len(shortenedUrls)
 
@@ -202,9 +201,10 @@ def generateShortenedURL(fullURL):
     shortenedUrls.to_csv('shortUrls.csv', index=None)
     return shortened_url
 
+
 # delete shortened URL from CSV
 def deleteShortenedURL(fullURL):
-   # read in csv using pandas
+    # read in csv using pandas
     shortenedUrls = pd.read_csv('shortUrls.csv')
 
     # delete row with matching fullURL
@@ -212,15 +212,16 @@ def deleteShortenedURL(fullURL):
     shortenedUrls.to_csv('shortUrls.csv', index=None)
     return 'shortened URL deleted'
 
+
 # pull message details using SID for alert box
 def pullMessage(sid):
     message = client.messages(sid).fetch()
 
     return message.sid, message.from_, message.to, message.body, message.status, message.error_code, message.error_message, message.date_sent, message.direction, message.price, message.price_unit
 
-# show message history for last 24 hours by default - use apply button on browser to pass additional parameters
-def getMessageHistory(startDate=None,endDate=None,fromN=None,toN=None):
 
+# show message history for last 24 hours by default - use apply button on browser to pass additional parameters
+def getMessageHistory(startDate=None, endDate=None, fromN=None, toN=None):
     # if no startDate is passed as args, assign default start date as the beginning of the previous date
     if not startDate:
         today = str(date.today())
@@ -251,10 +252,10 @@ def getMessageHistory(startDate=None,endDate=None,fromN=None,toN=None):
         toN = formatNumber(toN)
     messages = client.messages.list(date_sent_after=startDate, date_sent_before=endDate, from_=fromN, to=toN)
 
-
     d = []
     for record in messages:
-        d.append((record.from_, record.to, record.date_sent, record.status, record.sid, record.direction, record.error_message, record.price))
+        d.append((record.from_, record.to, record.date_sent, record.status, record.sid, record.direction,
+                  record.error_message, record.price))
         pullMessage(record.sid)
 
     # format price and sort by most recent date
@@ -266,6 +267,32 @@ def getMessageHistory(startDate=None,endDate=None,fromN=None,toN=None):
     df = df.sort_values(by='Date', ascending=False)
     # print(df.to_string())
     return df
+
+
+# show failed or undelivered messages filtered by any parameters
+def showMessageFailures(status, dateSentAfter=None, dateSentBefore=None):
+    url = f"https://{spaceURL}/api/laml/2010-04-01/Accounts/{projectID}/Messages.json?PageSize=500&Status={status}&DateSent<={dateSentBefore}&DateSent>={dateSentAfter}"
+
+    payload = {}
+    headers = {
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload, auth=HTTPBasicAuth(projectID, authToken))
+
+    messages = response.json()['messages']
+
+    d = []
+    for msg in messages:
+        d.append((msg['from'], msg['to'], msg['date_sent'], msg['status'], msg['sid'], msg['direction'],
+                   msg["error_message"], msg["error_code"]))
+
+    # sort by most recent date
+    df = pd.DataFrame(d, columns=('From', 'To', 'Date', 'Status', 'SID', 'Type', 'Message Error', 'Error Code'))
+    df['Date'] = pd.to_datetime(df['Date'])
+    df = df.sort_values(by='Date', ascending=False)
+
+    return df
+
 
 # remove customer row from CSV
 def deleteCustomerDataCSV(folder, number, path=None):
@@ -314,6 +341,7 @@ def deleteCustomerDataCSV(folder, number, path=None):
             i += 1
 
     return 200
+
 
 # upload CSV from computer and add to customer Data, display available CSVs
 def uploadCSV(path):
@@ -369,6 +397,7 @@ def uploadCSV(path):
     print("Finished looping through results")
     return newPath
 
+
 # display all existing CSVs
 def displayCSV(path):
     # show available CSVs and their contents
@@ -385,6 +414,7 @@ def displayCSV(path):
                 results[row['Number']] = [row['First'], row['Last']]
         i += 1
     return dir_list
+
 
 # search CSV and return customer record if it exists
 def searchCSV(path, number):
@@ -413,6 +443,7 @@ def searchCSV(path, number):
 
     return customerRecord
 
+
 # grab CSV file and load into customer data table
 def dropdownCSVTable(filename):
     fileName = f"src/{filename}"
@@ -420,17 +451,19 @@ def dropdownCSVTable(filename):
     customerList = list(data.values)
     return customerList
 
+
 # handle inbound shortened url requests and redirect to full URL
 @app.route("/sc/<char>", methods=('GET', 'POST'))
 def redirectShortCode(char):
     decoded_id = short_url.decode_url(char)
     print(decoded_id)
     shortenedUrls = pd.read_csv('shortUrls.csv')
-    fullURL = shortenedUrls.loc[decoded_id,'Full URL']
+    fullURL = shortenedUrls.loc[decoded_id, 'Full URL']
     shortenedUrls.loc[decoded_id, 'Last Clicked'] = datetime.date.today()
     shortenedUrls.to_csv('shortUrls.csv', index=None)
 
     return redirect(fullURL, code=302)
+
 
 # handle status callbacks
 @app.route("/statusCallbacks", methods=('GET', 'POST'))
@@ -440,17 +473,16 @@ def status_callbacks():
     error_code = request.values.get('ErrorCode', None)
     logging.info('SID: {}, Status: {}, ErrorCode: {}'.format(message_sid, message_status, error_code))
 
-    today = datetime.datetime.now(timezone.utc)
-    two_days_ago = today - timedelta(minutes=2)
-
 
     if (message_status == "undelivered" or message_status == "failed"):
         message = client.messages(message_sid).fetch()
-        undeliveredArray.append([message_sid, message_status, error_code, message.error_message, message.date_created, message.date_sent, message.to,
+        undeliveredArray.append(
+            [message_sid, message_status, error_code, message.error_message, message.date_sent,
+             message.to,
              message.from_, message.body])
 
         df = pd.DataFrame(undeliveredArray, columns=(
-            'Message Sid', 'Message Status', 'Error Code', 'Error Message', 'DateSent', 'DateCreated', 'To', 'From',
+            'Message Sid', 'Message Status', 'Error Code', 'Error Message', 'DateSent', 'To', 'From',
             'Body'))
         df['DateSent'] = pd.to_datetime(df['DateSent'])
         df = df.sort_values(by='DateSent', ascending=False)
@@ -458,13 +490,43 @@ def status_callbacks():
 
     return '200'
 
+
 # error center for displaying the failed or undelivered messages
 @app.route('/errorCenter', methods=('GET', 'POST'))
 def errorCenter():
-    df = pd.read_csv('failedMessages.csv')
-    table = df.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"])
 
-    return render_template('errorCenter.html', table=table, index=False)
+    if request.form.get('status'):
+        status = request.form.get('status')
+
+        if request.form.get('DateSentAfter'):
+            dateSentAfter = request.form.get('DateSentAfter')
+
+            if request.form.get('DateSentBefore'):
+                dateSentBefore = request.form.get('DateSentBefore')
+
+                df = showMessageFailures(status, dateSentAfter=dateSentAfter, dateSentBefore=dateSentBefore)
+                table = df.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"],index=False)
+
+            else:
+                df = showMessageFailures(status, dateSentAfter)
+                table = df.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"],index=False)
+
+        else:
+            if request.form.get('DateSentBefore'):
+                dateSentBefore = request.form.get('DateSentBefore')
+                df = showMessageFailures(status, dateSentBefore=dateSentBefore)
+                table = df.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"],index=False)
+
+            else:
+                df = showMessageFailures(status)
+                table = df.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False)
+
+    else:
+        df = pd.read_csv('failedMessages.csv')
+        table = df.to_html(
+            classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False)
+
+    return render_template('errorCenter.html', table=table)
 
 
 # handle inbound messages
@@ -494,15 +556,16 @@ def inbound():
 
     return client_from
 
+
 # handle home page requests
 @app.route("/home", methods=('GET', 'POST'))
 def home():
     return render_template('index.html')
 
+
 # handle customer data home page requests
 @app.route("/customerData", methods=('GET', 'POST'))
 def customerData():
-
     if request.args.get('filename'):
         fileName = request.args.get('filename')
 
@@ -514,7 +577,9 @@ def customerData():
 
     csvList = displayCSV('src/')
 
-    return render_template('customerData.html', csvs = csvList, table=data.to_html(classes=["table", "table-striped", "table-dark"], index=False))
+    return render_template('customerData.html', csvs=csvList,
+                           table=data.to_html(classes=["table", "table-striped", "table-dark"], index=False))
+
 
 # handle number group page requests
 @app.route('/numberGroups', methods=('GET', 'POST'))
@@ -573,8 +638,8 @@ def numberGroups():
         group_table = data.to_html(classes=["table", "table-striped", "table-dark"], index=False)
         h4 = "Click a number group from the left to see the numbers it contains below."
 
+    return render_template('numberGroups.html', groups=groups, table=group_table, numbers=numbers, h4=h4)
 
-    return render_template('numberGroups.html', groups = groups, table = group_table, numbers = numbers, h4 = h4)
 
 # handle data upload requests
 @app.route('/uploadFile', methods=('GET', 'POST'))
@@ -584,8 +649,9 @@ def uploadFileChoice():
     uploadCSV(filename)
     return redirect(f"/customerData?filename={filename}", code=302)
 
+
 # handle message history requests
-@app.route('/messageHistory', methods = ['POST', 'GET'])
+@app.route('/messageHistory', methods=['POST', 'GET'])
 def messageHistory():
     if request.form.get('startDate'):
         startDate = request.form.get('startDate')
@@ -607,12 +673,14 @@ def messageHistory():
     else:
         toN = None
 
-    data = getMessageHistory(startDate=startDate, endDate=endDate, fromN = fromN, toN = toN)
+    data = getMessageHistory(startDate=startDate, endDate=endDate, fromN=fromN, toN=toN)
 
-    return render_template('messageHistory.html', table=data.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False))
+    return render_template('messageHistory.html', table=data.to_html(
+        classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False))
+
 
 # handle url shortener
-@app.route('/shortUrls', methods = ['POST', 'GET'])
+@app.route('/shortUrls', methods=['POST', 'GET'])
 def shortenedURLs():
     # generate new shortened URL
     if request.args.get('fullURL'):
@@ -627,10 +695,13 @@ def shortenedURLs():
     data = pd.read_csv('shortUrls.csv')
     urls = data['Full URL'].tolist()
 
-    return render_template('urlShortener.html', table = data.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False), urls = urls)
+    return render_template('urlShortener.html', table=data.to_html(
+        classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False),
+                           urls=urls)
+
 
 # handle  bulk messaging
-@app.route('/textBlasts', methods = ['POST', 'GET'])
+@app.route('/textBlasts', methods=['POST', 'GET'])
 def bulkSend():
     csvList = displayCSV('src/')
     groups = list_number_groups()
