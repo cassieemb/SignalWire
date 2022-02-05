@@ -21,11 +21,24 @@
         <script type="text/javascript" src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <style type="text/css">
+        body {
+        padding-top: 50px;
+        }
+        .navbar {
+        height: 50px;
+        padding: 0 15px;
+        width: 100%;
+        position: fixed;
+        top: 0;
+        z-index: 1;
+        }
+</style>
 
     </head>
     <body>
         <!-- Responsive navbar-->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark navbar-fixed-top">
             <div class="container px-lg-5">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item dropdown">
@@ -48,10 +61,10 @@
         </nav>
 
         <!-- Page Content-->
-        <div class="wrapper d-flex align-items-stretch" style="background:#212529;">
+        <div class="wrapper d-flex align-items-stretch" style="background:#212529;" id="primary">
 
             <!-- Side Navbar-->
-			<nav id="sidebar">
+			<nav id="sidebar" class="full-height">
 				<div class="custom-menu">
 					<button type="button" id="sidebarCollapse" class="btn btn-primary">
 	                    <i class="bi bi-toggles"></i>
@@ -95,7 +108,7 @@
 
             <!-- Customer Data Table-->
             <div class="col-md-12 table-responsive">
-                <table>
+                <table class="table table-fixed">
                     {{table | safe }}
                 </table>
             </div>
@@ -104,20 +117,12 @@
 
     <script type="text/javascript">
 
+    var height=$('#primary').height(); // Calculate primary wrapper height
+    $('#sidebar').height(height); // Set the height it to sidebar
 
    (function($) {
 
    "use strict";
-
-   var fullHeight = function() {
-
-      $('.js-fullheight').css('height', $(window).height());
-      $(window).resize(function(){
-         $('.js-fullheight').css('height', $(window).height());
-      });
-   };
-
-   fullHeight();
 
    $('#sidebarCollapse').on('click', function () {
       $('#sidebar').toggleClass('active');

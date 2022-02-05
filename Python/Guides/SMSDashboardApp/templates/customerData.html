@@ -75,12 +75,13 @@
                     <h6>You can have any amount of columns, but make sure you include ones named First, Last, and Number!</h6>
                     <br>
 
-                    <form class="md-form" action="/uploadFile">
-                        <div class="file-field">
-                            <div class="btn-md float-left">
-                                <input type="file" name="filename">
+                    <form class="md-form" action="/uploadFile" enctype="multipart/form-data" method="post" id="uploadData" onchange="return fileValidation()">
+                        <div class="file-field upload-block">
+                            <div class="btn-md">
+                                <input type="file" name="file" id="file">
                                 <br>
-                                <input type="submit">
+                                <br>
+                                <input class="btn-md" type="submit" value="Upload" id="upload-btn">
                             </div>
                         </div>
                     </form>
@@ -99,20 +100,12 @@
 
     <script type="text/javascript">
 
+    var height=$('#primary').height(); // Calculate primary wrapper height
+    $('#sidebar').height(height); // Set the height it to sidebar
 
    (function($) {
 
    "use strict";
-
-   var fullHeight = function() {
-
-      $('.js-fullheight').css('height', $(window).height());
-      $(window).resize(function(){
-         $('.js-fullheight').css('height', $(window).height());
-      });
-   };
-
-   fullHeight();
 
    $('#sidebarCollapse').on('click', function () {
       $('#sidebar').toggleClass('active');
@@ -121,5 +114,38 @@
     })(jQuery);
 
     </script>
+    <script type="text/javascript">
+        function fileValidation() {
+            var fileInput = document.getElementById('file');
+            var filePath = fileInput.value;
+
+
+            // only accept files in CSV format
+            var allowedExtensions = /(\.csv)$/i;
+
+            if (!allowedExtensions.exec(filePath)) {
+                alert('File must be CSV.');
+                filePath = '';
+                return false;
+            }
+
+            if
+        }
+        </script>
+    <script type="text/javascript">
+        $("#upload-btn").click(function() {
+        var fileName = $("#file").val();
+
+        if(fileName) {
+           return true;
+        }
+        else {
+            alert("no file selected");
+            return false;
+    }
+    return true;
+});
+    </script>
+
     </body>
 </html>

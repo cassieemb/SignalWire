@@ -52,10 +52,15 @@
 
             <div class="col-sm-4" style="text-align: center;">
                             <h4>Generate a shortened URL.</h4>
-                            <form action="/shortUrls">
+                            <form action="/shortUrls" id="createShort" onsubmit="return validateForm()">
                                 <label for="createShortURL">
                                     Full URL:
                                     <input type="text" id="createShortURL" name="fullURL">
+                                </label>
+
+                                <label for="useKeyword">
+                                    Enter a keyword to help identify your campaign (https://example.com/<strong>concertName</strong>/fds) <br>
+                                    <input type="text" id="useKeyword" name="keyword">
                                 </label>
 
                                 <input type="submit" value="Submit">
@@ -89,6 +94,20 @@
                         </div>
 
         </div>
+            <script type="text/javascript">
+            function validateForm(){
+
+            var url = document.forms["createShort"]['createShortUrl'];
+
+            if (url.value.trim().length == ''){
+            window.alert("Please enter a URL to generate a shortened version.")
+            url.focus();
+            return false;
+            }
+
+            return true;
+            }
+        </script>
 
     </body>
 </html>

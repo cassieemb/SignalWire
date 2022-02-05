@@ -1,25 +1,14 @@
 # **Full Service SMS App**
-## Currently Working on:
-### Error history Page 
-- remove all entries more than 48 hours before current time
-- click sid for additional details in pop up box 
 
-## Come back to:
-### Error history Page 
-- set all phone numbers on project to hostname/inbound webhook 
+- show current table name 
+- styling of whole app (color schemes, make formatting prettier, set consistent background colors (light grey maybe?))
 
-### Message history 
-* fix sidebar without changing background
-* add progress bar
-* fixed header while scrolling
-* click sid for additional details in pop up box 
+## todo list
+- set up alert for when customer has already opted out and ask for input (yes or no)
+- pass http errors through to client side instead of letting page crash for bulk send (something wrong with number, sid not capable, etc) (use flash?)
+- clear cookies and add login page to set .env file
+  
 
-### Bulk messaging section
-- progress bar
-- twilio.base.exceptions.TwilioRestException: HTTP 422 error: Unable to create record: Messagingservicesid does not have a SMS-capable phone number in the group.
-- Show all sends in table (date of send, customer data file used, total number of messages sent, success rate? )
-- set status callback URL in message send
-
-### Customer Data Page
-* current issue - file upload doesn't pass the actual file through url in upload file parameter
-* set up alert for when customer has already opted out
+- display daily opt out rate 
+- click to see more details?
+- progress bar for while bulk send is going and while message history is loading

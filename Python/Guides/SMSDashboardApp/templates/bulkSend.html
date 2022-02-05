@@ -23,19 +23,11 @@
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 
         <style>
-        formdiv {
-            box-sizing: border-box;
-            width: 100%;
-            border: 100px solid black;
-            float: left;
-            align-content: center;
-            align-items: center;
-
-           }
 
             form {
                 margin: auto;
                 width: 600px;
+                }
 
         </style>
 
@@ -65,13 +57,15 @@
         </nav>
 
         <!-- Page Content-->
-        <div id="main">
-            <div id="first">
-                    <h2 style="text-align: center;" class="title">Customize your Text Blast Below!</h2>
-                    <form name='prepareBulkMsg' action="/textBlasts" onsubmit="return validateForm()">
+        <div class="wrapper d-flex align-items-stretch">
+            <div class="col-sm-5" style="text-align: center;">
+                <h2 style="text-align: center;">Prepare your Text Blast here!</h2>
+                <form name='prepareBulkMsg' action="/textBlasts" onsubmit="return validateForm()">
                                 <label for="selectData">
                                     Select from uploaded customer data sheets:
-                                    <select class="form-control" id="selectData" name="filename">
+
+                                </label>
+                                <select class="form-control" id="selectData" name="filename">
                                        {% for csv in csvs %}
                                         {% if csv != 'opt_out_list.csv' %}
                                             <option value="{{csv}}">
@@ -80,16 +74,14 @@
                                         {% endif %}
                                         {% endfor %}
                                     </select>
-                                </label>
                                 <br>
                                 <br>
 
                                 <label for="enterTemplate">
                                     Enter message body:
-                                    <input type="text" id="enterTemplate" name="body">
                                 </label>
-                                <br>
-                                <br>
+                                <input type="text" id="enterTemplate" name="body">
+
 
                                 <label>
                                     <input type="radio" onclick="javascript:displayCorrectSelect();" id="checkAccountNum" name="selectSendType" checked/> Send from Project Number
@@ -118,32 +110,37 @@
 
                                 </label>
 
-                                <br>
 
-                                <label>
-                                    Would you like opt out added automatically to your message?
-                                    Ex: {message template} Reply stop to opt out
-                                    <input type="radio"  id="includeOptOut" name="optOut"/> Yes
-                                    <br>
-
+                                <label for="includeOptOut">
+                                    Add opt out language automatically?
+                                    <strong>Ex: {message template} Reply stop to opt out</strong>
                                 </label>
-
+                                <br>
+                                <input type="radio"  id="includeOptOut" name="optOut"/> Yes
+                                <br>
                                 <br>
 
-                                <label>
-                                    Would you like a name intro appended to the beginning of your message?
-                                    Ex: Hello {name}, {template starts here}
-                                    <input type="radio"  id="includeNameIntro" name="nameIntro"/> Yes
-                                    <br>
-
+                                <label for="includeNameIntro">
+                                    Add a custom name intro?
+                                    <strong>Ex: Hello {name}, {template starts here}</strong>
                                 </label>
-
                                 <br>
-
+                                <input type="radio"  id="includeNameIntro" name="nameIntro"/> Yes
+                                <br>
+                                <br>
                                 <input type="submit" value="Submit">
                     </form>
-                </div>
+            </div>
+
+            <div class="col-md-7">
+                <h2 style="text-align: center;">Review Previous Sends Here!</h2>
+                            <table>
+                                {{table | safe }}
+                            </table>
+                        </div>
+
         </div>
+
 
         <script type="text/javascript">
 

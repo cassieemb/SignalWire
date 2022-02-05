@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, flash
 from signalwire.rest import Client as signalwire_client
 import pandas as pd
 import os
@@ -12,6 +12,7 @@ import datetime
 import json
 import requests
 from requests.auth import HTTPBasicAuth
+import numpy as np
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -23,8 +24,8 @@ authToken = os.getenv('SIGNALWIRE_TOKEN')
 spaceURL = os.getenv('SIGNALWIRE_SPACE')
 hostName = os.getenv('SIGNALWIRE_HOST_NAME')
 
-# error center variables
-undeliveredArray = []
+app.config['UPLOAD_FOLDER'] = 'src/'
+
 
 # import client
 client = signalwire_client(projectID, authToken, signalwire_space_url=spaceURL)
@@ -39,6 +40,20 @@ def list_account_numbers():
         numbers[record.phone_number] = record.sid
 
     return numbers
+
+
+# assign inbound webhook to all phone numbers in project so that we can track stop replies
+def assign_webhook():
+    incoming_phone_numbers = client.incoming_phone_numbers.list()
+    print("Total Numbers -- " + str(len(incoming_phone_numbers)))
+
+    for record in incoming_phone_numbers:
+        print("update number -- " + record.phone_number)
+        response = requests.put(f"https://{spaceURL}/api/relay/rest/phone_numbers/" + record.sid,
+                                params={'message_handler': 'laml_webhooks',
+                                        'message_request_url': hostName + 'inbound'}
+                                , auth=HTTPBasicAuth(projectID, authToken))
+        print(response)
 
 
 # create a new number group
@@ -144,6 +159,7 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
 
     # if using number group to send
     if numberGroupID:
+        sendType = 'Number Group'
         for customer in results:
             # change formatted number to E164, change nameIntro to Hello Name if true, change optOutLanuage to reply stop to opt out if true
             formattedNumber = "+" + customer if "+" not in customer else customer
@@ -154,7 +170,9 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
             message = client.messages.create(
                 messaging_service_sid=numberGroupID,
                 body=f"{nameIntro} {body} {optOutLanguage}",
-                to=formattedNumber)
+                to=formattedNumber,
+                status_callback=f"{hostName}statusCallbacks"
+            )
 
             logging.info(
                 'SID: {}, From: {}, To: {}, Body: {}, Date/Time Sent: {}'.format(message.sid, message.from_, message.to,
@@ -164,6 +182,7 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
 
     # if using one account number to send
     else:
+        sendType = 'Account Number'
         for customer in results:
             # change formatted number to E164, change nameIntro to Hello Name if true, change optOutLanuage to reply stop to opt out if true
             formattedNumber = "+" + customer if "+" not in customer else customer
@@ -174,7 +193,9 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
             message = client.messages.create(
                 from_=fromNumber,
                 body=f"{nameIntro} {body} {optOutLanguage}",
-                to=formattedNumber)
+                to=formattedNumber,
+                status_callback=f"{hostName}statusCallbacks"
+            )
 
             logging.info(
                 'SID: {}, From: {}, To: {}, Body: {}, Date/Time Sent: {}'.format(message.sid, message.from_, message.to,
@@ -182,7 +203,25 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
             # sleep for 1 second in order to rate limit at 1 messag per second - adjust based on your approved campaign throughput
             time.sleep(1)
 
-    return len(results)
+    df = pd.read_csv('src/sends.csv')
+    if nameIntro:
+        nameIntro = True
+    else:
+        nameIntro = False
+
+    if optOut:
+        optOut = True
+    else:
+        optOut = False
+
+    df.loc[len(df.index)] = [datetime.date.today(), fileName, len(results), sendType, nameIntro, optOut]
+
+    df['Send Date'] = pd.to_datetime(df['Send Date'], utc=True)
+    df = df.sort_values(by='Send Date', ascending=False)
+    df.replace({np.nan: None})
+    df.to_csv('src/sends.csv', index=None)
+
+    return 'messages done sending'
 
 
 def formatNumber(number):
@@ -191,25 +230,25 @@ def formatNumber(number):
 
 
 # generate shortened URL using encoding and store in CSV
-def generateShortenedURL(fullURL):
+def generateShortenedURL(fullURL, keyword):
     # read in csv using pandas
-    shortenedUrls = pd.read_csv('shortUrls.csv')
+    shortenedUrls = pd.read_csv('src/shortUrls.csv')
     object_id = len(shortenedUrls)
 
-    shortened_url = f"{hostName}sc/{short_url.encode_url(object_id, min_length=6)}"
-    shortenedUrls.loc[len(shortenedUrls.index)] = [fullURL, shortened_url, datetime.date.today(), 'Not Used Yet']
-    shortenedUrls.to_csv('shortUrls.csv', index=None)
+    shortened_url = f"{hostName}{keyword}/{short_url.encode_url(object_id, min_length=3)}"
+    shortenedUrls.loc[len(shortenedUrls.index)] = [fullURL, shortened_url, datetime.date.today(), 'Not Used Yet', 0]
+    shortenedUrls.to_csv('src/shortUrls.csv', index=None)
     return shortened_url
 
 
 # delete shortened URL from CSV
 def deleteShortenedURL(fullURL):
     # read in csv using pandas
-    shortenedUrls = pd.read_csv('shortUrls.csv')
+    shortenedUrls = pd.read_csv('src/shortUrls.csv')
 
     # delete row with matching fullURL
     shortenedUrls.drop(shortenedUrls[shortenedUrls['Full URL'] == fullURL].index, inplace=True)
-    shortenedUrls.to_csv('shortUrls.csv', index=None)
+    shortenedUrls.to_csv('src/shortUrls.csv', index=None)
     return 'shortened URL deleted'
 
 
@@ -284,7 +323,7 @@ def showMessageFailures(status, dateSentAfter=None, dateSentBefore=None):
     d = []
     for msg in messages:
         d.append((msg['from'], msg['to'], msg['date_sent'], msg['status'], msg['sid'], msg['direction'],
-                   msg["error_message"], msg["error_code"]))
+                  msg["error_message"], msg["error_code"]))
 
     # sort by most recent date
     df = pd.DataFrame(d, columns=('From', 'To', 'Date', 'Status', 'SID', 'Type', 'Message Error', 'Error Code'))
@@ -343,71 +382,29 @@ def deleteCustomerDataCSV(folder, number, path=None):
     return 200
 
 
-# upload CSV from computer and add to customer Data, display available CSVs
-def uploadCSV(path):
-    # upload file from somewhere on computer, front end will grab path using js library
-    # strip whitespace and convert to E164 format
-    df = pd.read_csv(path, header=0)
-    newPath = f"src/{path}"
-    df = df.rename(columns=lambda x: x.strip())
-    df['Number'] = df['Number'].apply(formatNumber)
-    df.to_csv(newPath, index=False, encoding='utf-8')
-    print("Newly uploaded CSV")
-    print(df)
-    print()
-
-    # read in CSV to dict where phone number is the key and a list with [first name, last name, opt out date, and file] is the value
-    results = {}
-    with open('src/opt_out_list.csv', 'r', encoding='utf-8-sig') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            results[row['Number']] = [row['First'.strip()], row['Last'.strip()], row['Opt-Out-Date'.strip()],
-                                      row['filename'.strip()]]
-    print("Opt Out Dict")
-    print(str(results))
-    print()
-
-    # loop through opt out dict and check if the phone number is in the recently uploaded CSV
-    for result in results:
-        if result in df.values:
-            print(
-                f"The number {result} in your most recent upload is associated with {results[result][0]} {results[result][1]} who opted out on {results[result][2]}. "
-                f"They were originally uploaded in {results[result][3]}")
-
-            numTries = 1
-            while numTries < 4:
-                decision = input('Do you want to remove this customer from the data you just uploaded? y/n \n')
-
-                if decision.strip().lower() == 'y':
-                    deleteCustomerDataCSV('src/', result, f"src/{path}")
-                    break
-                elif decision.strip().lower() == 'n':
-                    print('Okay, but remember, ignoring opt outs is bad!')
-                    break
-                else:
-                    if numTries == 3:
-                        print("You entered input incorrectly too many times. "
-                              "Skipping customer and checking for other opted out customers in recent upload. \n")
-                        break
-                    else:
-                        print("Invalid Input. Please enter y for yes or n for no.")
-                        print(f"{3 - numTries} tries left before customer removal is skipped.")
-                        numTries += 1
-
-    print("Finished looping through results")
-    return newPath
-
-
 # display all existing CSVs
 def displayCSV(path):
     # show available CSVs and their contents
     dir_list = os.listdir(path)
+
+    # remove failed messages and short URLs from list
+    for file in dir_list:
+        if file == 'failedMessages.csv':
+            dir_list.pop(dir_list.index(file))
+
+    for file in dir_list:
+        if file == 'shortUrls.csv':
+            dir_list.pop(dir_list.index(file))
+
+    for file in dir_list:
+        if file == 'sends.csv':
+            dir_list.pop(dir_list.index(file))
+
     numCSVs = len(dir_list)
     i = 0
     results = {}
 
     while i < numCSVs:
-        # print(dir_list[i])
         with open(f"src/{dir_list[i]}", 'r', encoding='utf-8-sig') as file:
             reader = csv.DictReader(file)
             for row in reader:
@@ -453,14 +450,14 @@ def dropdownCSVTable(filename):
 
 
 # handle inbound shortened url requests and redirect to full URL
-@app.route("/sc/<char>", methods=('GET', 'POST'))
-def redirectShortCode(char):
+@app.route("/<name>/<char>", methods=('GET', 'POST'))
+def redirectShortCode(char, name):
     decoded_id = short_url.decode_url(char)
-    print(decoded_id)
-    shortenedUrls = pd.read_csv('shortUrls.csv')
+    shortenedUrls = pd.read_csv('src/shortUrls.csv')
     fullURL = shortenedUrls.loc[decoded_id, 'Full URL']
     shortenedUrls.loc[decoded_id, 'Last Clicked'] = datetime.date.today()
-    shortenedUrls.to_csv('shortUrls.csv', index=None)
+    shortenedUrls.loc[decoded_id, 'Times Clicked'] = shortenedUrls.loc[decoded_id, 'Times Clicked'] + 1
+    shortenedUrls.to_csv('src/shortUrls.csv', index=None)
 
     return redirect(fullURL, code=302)
 
@@ -473,20 +470,17 @@ def status_callbacks():
     error_code = request.values.get('ErrorCode', None)
     logging.info('SID: {}, Status: {}, ErrorCode: {}'.format(message_sid, message_status, error_code))
 
+    df = pd.read_csv('src/failedMessages.csv')
 
     if (message_status == "undelivered" or message_status == "failed"):
         message = client.messages(message_sid).fetch()
-        undeliveredArray.append(
-            [message_sid, message_status, error_code, message.error_message, message.date_sent,
-             message.to,
-             message.from_, message.body])
+        df.loc[len(df.index)] = [message_sid, message_status, error_code, message.error_message, message.date_sent,
+                                 message.to,
+                                 message.from_, message.body]
 
-        df = pd.DataFrame(undeliveredArray, columns=(
-            'Message Sid', 'Message Status', 'Error Code', 'Error Message', 'DateSent', 'To', 'From',
-            'Body'))
-        df['DateSent'] = pd.to_datetime(df['DateSent'])
-        df = df.sort_values(by='DateSent', ascending=False)
-        df.to_csv('failedMessages.csv', index=None)
+    df['DateSent'] = pd.to_datetime(df['DateSent'], utc=True)
+    df = df.sort_values(by='DateSent', ascending=False)
+    df.to_csv('src/failedMessages.csv', index=None)
 
     return '200'
 
@@ -494,7 +488,6 @@ def status_callbacks():
 # error center for displaying the failed or undelivered messages
 @app.route('/errorCenter', methods=('GET', 'POST'))
 def errorCenter():
-
     if request.form.get('status'):
         status = request.form.get('status')
 
@@ -505,26 +498,35 @@ def errorCenter():
                 dateSentBefore = request.form.get('DateSentBefore')
 
                 df = showMessageFailures(status, dateSentAfter=dateSentAfter, dateSentBefore=dateSentBefore)
-                table = df.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"],index=False)
+                table = df.to_html(
+                    classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"],
+                    index=False)
 
             else:
                 df = showMessageFailures(status, dateSentAfter)
-                table = df.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"],index=False)
+                table = df.to_html(
+                    classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"],
+                    index=False)
 
         else:
             if request.form.get('DateSentBefore'):
                 dateSentBefore = request.form.get('DateSentBefore')
                 df = showMessageFailures(status, dateSentBefore=dateSentBefore)
-                table = df.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"],index=False)
+                table = df.to_html(
+                    classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"],
+                    index=False)
 
             else:
                 df = showMessageFailures(status)
-                table = df.to_html(classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False)
+                table = df.to_html(
+                    classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"],
+                    index=False)
 
     else:
-        df = pd.read_csv('failedMessages.csv')
+        df = pd.read_csv('src/failedMessages.csv')
         table = df.to_html(
-            classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False)
+            classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"],
+            index=False)
 
     return render_template('errorCenter.html', table=table)
 
@@ -644,9 +646,61 @@ def numberGroups():
 # handle data upload requests
 @app.route('/uploadFile', methods=('GET', 'POST'))
 def uploadFileChoice():
-    filename = request.args.get('filename')
-    print(filename)
-    uploadCSV(filename)
+    if request.method == 'POST' and 'file' in request.files:
+        f = request.files['file']
+        f.save(os.path.join(app.config['UPLOAD_FOLDER'], f.filename))
+        filename = f.filename
+
+        # read in newly created CSV and format phone number
+        df = pd.read_csv(f"src/{filename}", header=0)
+        newPath = f"src/{filename}"
+        df = df.rename(columns=lambda x: x.strip())
+        df['Number'] = df['Number'].apply(formatNumber)
+        df.to_csv(newPath, index=False, encoding='utf-8')
+        print("Newly uploaded CSV")
+        print(df)
+
+        # read in CSV to dict where phone number is the key and a list with [first name, last name, opt out date, and file] is the value
+        results = {}
+        with open('src/opt_out_list.csv', 'r', encoding='utf-8-sig') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                results[row['Number']] = [row['First'.strip()], row['Last'.strip()], row['Opt-Out-Date'.strip()],
+                                          row['filename'.strip()]]
+        print("Opt Out Dict")
+        print(str(results))
+
+        # loop through opt out dict and check if the phone number is in the recently uploaded CSV
+        for result in results:
+            if result in df.values:
+                print(
+                    f"The number {result} in your most recent upload is associated with {results[result][0]} {results[result][1]} who opted out on {results[result][2]}. "
+                    f"They were originally uploaded in {results[result][3]}")
+
+                numTries = 1
+                while numTries < 4:
+                    decision = input('Do you want to remove this customer from the data you just uploaded? y/n \n')
+
+                    if decision.strip().lower() == 'y':
+                        deleteCustomerDataCSV('src/', result, f"src/{filename}")
+                        break
+                    elif decision.strip().lower() == 'n':
+                        print('Okay, but remember, ignoring opt outs is bad!')
+                        break
+                    else:
+                        if numTries == 3:
+                            print("You entered input incorrectly too many times. "
+                                  "Skipping customer and checking for other opted out customers in recent upload. \n")
+                            break
+                        else:
+                            print("Invalid Input. Please enter y for yes or n for no.")
+                            print(f"{3 - numTries} tries left before customer removal is skipped.")
+                            numTries += 1
+
+        print("Finished looping through results")
+
+    else:
+        filename = None
     return redirect(f"/customerData?filename={filename}", code=302)
 
 
@@ -685,14 +739,19 @@ def shortenedURLs():
     # generate new shortened URL
     if request.args.get('fullURL'):
         fullURL = request.args.get('fullURL')
-        generateShortenedURL(fullURL)
+        if request.args.get('keyword'):
+            keyword = request.args.get('keyword')
+            generateShortenedURL(fullURL, keyword)
+        else:
+            keyword = 'sc'
+            generateShortenedURL(fullURL, keyword)
 
     # delete shortened URL
     if request.args.get('delURL'):
         delURL = request.args.get('delURL')
         deleteShortenedURL(delURL)
 
-    data = pd.read_csv('shortUrls.csv')
+    data = pd.read_csv('src/shortUrls.csv')
     urls = data['Full URL'].tolist()
 
     return render_template('urlShortener.html', table=data.to_html(
@@ -730,7 +789,11 @@ def bulkSend():
 
         send_in_bulk(filename, body, nameIntro, optOut, groupID, fromNumber)
 
-    return render_template('bulkSend.html', csvs=csvList, groups=groups, numbers=numbers)
+    data = pd.read_csv('src/sends.csv')
+    return render_template('bulkSend.html', csvs=csvList, groups=groups, numbers=numbers, table=data.to_html(
+        classes=["table", "table-striped", "table-dark", "table-hover", "table-condensed", "table-fixed"], index=False))
+
 
 if __name__ == "__main__":
+    # assign_webhook()
     app.run(debug=True)

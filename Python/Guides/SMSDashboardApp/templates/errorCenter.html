@@ -21,6 +21,20 @@
         <script type="text/javascript" src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <style>
+            body {
+      padding-top: 50px;
+    }
+
+    .navbar {
+      height: 50px;
+      padding: 0 15px;
+      width: 100%;
+      position: fixed;
+      top: 0;
+      z-index: 1;
+    }
+        </style>
 
     </head>
     <body>
@@ -48,7 +62,7 @@
         </nav>
 
         <!-- Page Content-->
-        <div class="wrapper d-flex align-items-stretch" style="background:#212529;">
+        <div class="wrapper d-flex align-items-stretch" style="background:#212529;" id="primary">
 
             <!-- Side Navbar-->
 			<nav id="sidebar">
@@ -61,7 +75,7 @@
 				<div class="p-4 pt-5">
 		  		    <h3>Error Center</h3>
                     <div class="dropdown-divider"></div>
-                    <h6>Shows all undelivered or failed messages for last 48 hours</h6>
+                    <h6>Shows all undelivered or failed messages sorted by descending date.</h6>
                     <div class="dropdown-divider"></div>
                     <h6>collapse filters to view complete table</h6>
                     <div class="dropdown-divider"></div>
@@ -100,21 +114,12 @@
         </div>
 
     <script type="text/javascript">
-
+    var height=$('#primary').height(); // Calculate primary wrapper height
+    $('#sidebar').height(height); // Set the height it to sidebar
 
    (function($) {
 
    "use strict";
-
-   var fullHeight = function() {
-
-      $('.js-fullheight').css('height', $(window).height());
-      $(window).resize(function(){
-         $('.js-fullheight').css('height', $(window).height());
-      });
-   };
-
-   fullHeight();
 
    $('#sidebarCollapse').on('click', function () {
       $('#sidebar').toggleClass('active');
@@ -128,6 +133,12 @@
         setInterval(function(){
         window.location.reload(1);
         }, 60000);
+    </script>
+
+    <script type="text/javascript">
+        $('.table > tbody > tr').on('click', function() {
+            console.log('table was clicked');
+           });
     </script>
 
     </body>
