@@ -22,28 +22,44 @@
 
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
         <style type="text/css">
-        body {
-        padding-top: 50px;
-        }
-        .navbar {
-        height: 50px;
-        padding: 0 15px;
-        width: 100%;
-        position: fixed;
-        top: 0;
-        z-index: 1;
-        }
+         body {
+      padding-top: 50px;
+    }
+
+    .navbar {
+      height: 50px;
+      padding: 0 15px;
+      width: 100%;
+      position: fixed;
+      top: 0;
+      z-index: 1;
+    }
+
+        input, select{
+            width: 200px;
+            padding: 0;
+            margin: 0;
+            height: 30px;
+         }
+         label{
+         margin-bottom: 0px;
+         margin-top: 20px;
+         }
+
+         input {
+            text-indent: 3px;
+         }
 </style>
 
     </head>
     <body>
         <!-- Responsive navbar-->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark navbar-fixed-top">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container px-lg-5">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
-                                       aria-haspopup="true" aria-expanded="false">Message History</a>
+                                       aria-haspopup="true" aria-expanded="false">Message History &nbsp;</a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="/home">Home Page</a>
                                         <div class="dropdown-divider"></div>
@@ -64,7 +80,7 @@
         <div class="wrapper d-flex align-items-stretch" style="background:#212529;" id="primary">
 
             <!-- Side Navbar-->
-			<nav id="sidebar" class="full-height">
+			<nav id="sidebar">
 				<div class="custom-menu">
 					<button type="button" id="sidebarCollapse" class="btn btn-primary">
 	                    <i class="bi bi-toggles"></i>
@@ -79,25 +95,28 @@
                     <h6>collapse filters to view complete table</h6>
                     <div class="dropdown-divider"></div>
                     <form action="/messageHistory" method="POST" id="applyFilters">
+
                         <label for="startA">
-                            Start Date
-                            <input type="date" name="startDate" id="startA">
+                            Enter a Start Date:
                         </label>
-
+                        <input type="date" name="startDate" id="startA">
+                        <br>
                         <label for="endA">
-                            End Date
-                            <input type="date" name="endDate" id="endA">
+                            Enter an End Date:
                         </label>
-
+                        <input type="date" name="endDate" id="endA">
+                        <br>
                         <label for="phoneF">
                             Enter a From Number:
-                            <input type="tel" id="phoneF" name="from" pattern="((\+|00)?[0-9]{2}|0)[1-9]([0-9]){8}">
                         </label>
+                        <input type="tel" id="phoneF" name="from" pattern="((\+|00)?[0-9]{2}|0)[1-9]([0-9]){8}">
+                        <br>
 
                         <label for="phoneT">
                             Enter a To Number:
-                            <input type="tel" id="phoneT" name="to" pattern="((\+|00)?[0-9]{2}|0)[1-9]([0-9]){8}">
                         </label>
+                        <input type="tel" id="phoneT" name="to" pattern="((\+|00)?[0-9]{2}|0)[1-9]([0-9]){8}">
+                        <br>
                         <h6>Numbers must be in E.164 format (+1xxxaaabbbb)</h6>
                         <button type="submit" class="btn btn-light" form="applyFilters">Apply Filters</button>
                     </form>
@@ -108,9 +127,7 @@
 
             <!-- Customer Data Table-->
             <div class="col-md-12 table-responsive">
-                <table class="table table-fixed">
                     {{table | safe }}
-                </table>
             </div>
 
         </div>

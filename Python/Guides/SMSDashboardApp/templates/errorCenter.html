@@ -34,6 +34,17 @@
       top: 0;
       z-index: 1;
     }
+
+    input, select, {
+            width: 200px;
+            padding: 0;
+            margin: 0;
+            height: 30px;
+         }
+
+         input {
+            text-indent: 3px;
+         }
         </style>
 
     </head>
@@ -44,7 +55,7 @@
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
-                                       aria-haspopup="true" aria-expanded="false">Error Center</a>
+                                       aria-haspopup="true" aria-expanded="false">Error Center &nbsp;</a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="/home">Home Page</a>
                                         <div class="dropdown-divider"></div>
@@ -62,7 +73,7 @@
         </nav>
 
         <!-- Page Content-->
-        <div class="wrapper d-flex align-items-stretch" style="background:#212529;" id="primary">
+        <div class="wrapper d-flex align-items-stretch" id="primary" style="background:#212529;">
 
             <!-- Side Navbar-->
 			<nav id="sidebar">
@@ -75,14 +86,14 @@
 				<div class="p-4 pt-5">
 		  		    <h3>Error Center</h3>
                     <div class="dropdown-divider"></div>
-                    <h6>Shows all undelivered or failed messages sorted by descending date.</h6>
+                    <h6>Shows all failed/undelivered messages using status callbacks by default.</h6>
                     <div class="dropdown-divider"></div>
                     <h6>collapse filters to view complete table</h6>
                     <div class="dropdown-divider"></div>
 
                     <form action="/errorCenter" method="POST" id="applyFilters">
                         <label for="status">
-                            Delivery Status:
+                            Delivery Status: <br>
                             <select name="status" id="status">
                                 <option value="undelivered" selected>Undelivered</option>
                                 <option value="failed">Failed</option>
@@ -106,9 +117,7 @@
 
             <!-- Customer Data Table-->
             <div class="col-md-12 table-responsive">
-                <table>
                     {{table | safe }}
-                </table>
             </div>
 
         </div>

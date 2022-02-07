@@ -22,6 +22,20 @@
 
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 
+         <style>
+            input, select, {
+            width: 200px;
+            padding: 0;
+            margin: 0;
+            height: 30px;
+         }
+
+         input {
+            text-indent: 3px;
+         }
+        </style>
+
+
     </head>
     <body>
         <!-- Responsive navbar-->
@@ -30,7 +44,7 @@
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
-                                       aria-haspopup="true" aria-expanded="false">Number Groups</a>
+                                       aria-haspopup="true" aria-expanded="false">Number Groups &nbsp;</a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="/home">Home Page</a>
                                         <div class="dropdown-divider"></div>
@@ -48,7 +62,7 @@
         </nav>
 
         <!-- Page Content-->
-        <div class="wrapper d-flex align-items-stretch">
+        <div class="wrapper d-flex align-items-stretch" style="background:#212529;">
 
             <!-- Side Navbar-->
 			<nav id="sidebar">
@@ -60,6 +74,8 @@
 
 				<div class="p-4 pt-5">
 		  		    <h3><a>Number Groups</a></h3>
+                    <div class="dropdown-divider"></div>
+                    <p>Currently viewing: {{groupName}}</p>
                     <div class="dropdown-divider"></div>
                     <ul class="collection w3-hoverable">
                         {% for dict_item in groups %}
@@ -73,23 +89,25 @@
                 </div>
 	        </nav>
 
-                 <div class="container-fluid p-0">
-                    <div class="row no-gutters">
-                        <div class="col-sm-6" style="text-align: center;">
-                            <h4>Create a New Number Group</h4>
+            <div class="container-fluid p-0" >
+                    <div class="row no-gutters"  style="background:#eee;">
+                        <div class=" p-5 col-sm-6" style="text-align: center;">
+                            <h3>Create a New Number Group</h3>
                             <form action="/numberGroups">
                                 <label for="createNumberGroup">
                                     Group Name:
-                                    <input type="text" id="createNumberGroup" name="newGroupName">
                                 </label>
-
+                                <input type="text" id="createNumberGroup" name="newGroupName">
                                 <input type="submit" value="Submit">
                             </form>
-                            <h4>Delete a Number Group</h4>
+                            <br>
+
+                            <h3>Delete a Number Group</h3>
                             <form action="/numberGroups">
                                 <label for="deleteNumberGroup">
                                     Select the number group you would like to delete.
-                                    <select class="form-control" id="deleteNumberGroup" name="delGroup">
+                                </label>
+                                <select id="deleteNumberGroup" name="delGroup">
                                        {% for dict_item in groups %}
                                             <option value="{{dict_item['id']}}">
                                                 {{ dict_item['name'] }}
@@ -98,18 +116,17 @@
 
                                     </select>
 
-                                </label>
-
                                 <input type="submit" value="Submit">
                             </form>
                         </div>
 
-                        <div class="col-sm-6" style="text-align: center;">
-                            <h4>Add Numbers to a Number Group</h4>
+                        <div class="p-5 col-sm-6" style="text-align: center;">
+                            <h3>Add Numbers to a Number Group</h3>
                             <form action="/numberGroups">
                                 <label for="selectGroup">
                                     Select the number group you would like to add numbers to.
-                                    <select class="form-control" id="selectGroup" name="chosenGroup">
+                                </label>
+                                <select  id="selectGroup" name="chosenGroup">
                                        {% for dict_item in groups %}
                                             <option value="{{dict_item['id']}}" SELECTED>
                                                 {{ dict_item['name'] }}
@@ -117,30 +134,29 @@
                                         {% endfor %}
 
                                     </select>
-                                </label>
+
                                 <label for="selectNumbers">
                                     Select the numbers you would like to add to this group.
-                                    <select multiple class="form-control" id="selectNumbers" name="numbers">
+                                </label>
+                                <select multiple id="selectNumbers" name="numbers">
                                         {% for dict_item in numbers %}
                                                 <option value="{{dict_item}}">
                                                     {{ dict_item }}
                                                 </option>
 
                                         {% endfor %}
-                                    </select>
-                                </label>
-
+                                </select>
+                                <br>
                                 <input type="submit" value="Submit">
                             </form>
                         </div>
+                        <h4 style="text-align: center;">{{h4}}</h4>
                     </div>
 
-                    <div class="row no-gutters">
+
+                    <div class="row no-gutters" >
                         <div class="col-md-12">
-                            <h4 style="text-align: center;">{{h4}}</h4>
-                            <table>
                                 {{table | safe }}
-                            </table>
                         </div>
                     </div>
             </div>

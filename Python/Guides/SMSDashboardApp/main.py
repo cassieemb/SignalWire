@@ -107,6 +107,17 @@ def list_number_groups():
     # print(response_json)
     return response_json
 
+# get number group name
+def get_group_name(id):
+    url = f"https://{spaceURL}/api/relay/rest/number_groups/{id}"
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    response = requests.request("GET", url, headers=headers, auth=HTTPBasicAuth(projectID, authToken))
+    response_json = response.json()['name']
+    return response_json
 
 # list number groups
 def list_number_group_members(groupID):
@@ -579,7 +590,7 @@ def customerData():
 
     csvList = displayCSV('src/')
 
-    return render_template('customerData.html', csvs=csvList,
+    return render_template('customerData.html', csvs=csvList, tableName = fileName,
                            table=data.to_html(classes=["table", "table-striped", "table-dark"], index=False))
 
 
@@ -624,8 +635,10 @@ def numberGroups():
 
         id = request.args.get('id')
         memberData = json.dumps(list_number_group_members(id))
+        print(memberData)
         data = pd.read_json(memberData)
         group_table = data.to_html(classes=["table", "table-striped", "table-dark"], index=False)
+        groupName = get_group_name(id)
 
         if len(data) == 0:
             h4 = 'This number group is empty! Add numbers to it now to see them below.'
@@ -639,8 +652,9 @@ def numberGroups():
         data = pd.DataFrame(d, columns=('id', 'name', 'number', 'capabilities'))
         group_table = data.to_html(classes=["table", "table-striped", "table-dark"], index=False)
         h4 = "Click a number group from the left to see the numbers it contains below."
+        groupName = 'None Selected'
 
-    return render_template('numberGroups.html', groups=groups, table=group_table, numbers=numbers, h4=h4)
+    return render_template('numberGroups.html', groups=groups, table=group_table, groupName = groupName, numbers=numbers, h4=h4)
 
 
 # handle data upload requests

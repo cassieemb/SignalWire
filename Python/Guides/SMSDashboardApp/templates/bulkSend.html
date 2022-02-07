@@ -24,10 +24,14 @@
 
         <style>
 
-            form {
-                margin: auto;
-                width: 600px;
-                }
+            input, select {
+            padding: 5px;
+            margin:15px;
+         }
+
+         label{
+         margin-bottom: 0px;
+         }
 
         </style>
 
@@ -39,7 +43,7 @@
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
-                                       aria-haspopup="true" aria-expanded="false">Text Blasts</a>
+                                       aria-haspopup="true" aria-expanded="false">Text Blasts &nbsp;</a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="/home">Home Page</a>
                                         <div class="dropdown-divider"></div>
@@ -58,14 +62,13 @@
 
         <!-- Page Content-->
         <div class="wrapper d-flex align-items-stretch">
-            <div class="col-sm-5" style="text-align: center;">
+            <div class="col-sm-5" style="text-align: center; background:#eee; height: 100vh;">
                 <h2 style="text-align: center;">Prepare your Text Blast here!</h2>
-                <form name='prepareBulkMsg' action="/textBlasts" onsubmit="return validateForm()">
+                <form style="text-align: center;" name='prepareBulkMsg' action="/textBlasts" onsubmit="return validateForm()">
                                 <label for="selectData">
                                     Select from uploaded customer data sheets:
-
                                 </label>
-                                <select class="form-control" id="selectData" name="filename">
+                                <select id="selectData" name="filename">
                                        {% for csv in csvs %}
                                         {% if csv != 'opt_out_list.csv' %}
                                             <option value="{{csv}}">
@@ -74,70 +77,60 @@
                                         {% endif %}
                                         {% endfor %}
                                     </select>
-                                <br>
-                                <br>
 
                                 <label for="enterTemplate">
-                                    Enter message body:
+                                    Enter your message template here:
                                 </label>
                                 <input type="text" id="enterTemplate" name="body">
 
 
                                 <label>
-                                    <input type="radio" onclick="javascript:displayCorrectSelect();" id="checkAccountNum" name="selectSendType" checked/> Send from Project Number
-                                    <input type="radio" onclick="javascript:displayCorrectSelect();" id="checkNumGroup" name="selectSendType" />Send from Number Group
-                                    <br>
+                                    Do you want to send from a single number or a number group? <br>
+                                    <input type="radio" onclick="javascript:displayCorrectSelect();" id="checkAccountNum" name="selectSendType" checked/> Single Number
+                                    <input type="radio" onclick="javascript:displayCorrectSelect();" id="checkNumGroup" name="selectSendType" />Number Group
+                                </label>
 
-                                    <div id="showFromNums">
-                                        <select class="form-control" id="chooseFromNumber" name="fromNumber">
+                                <div id="showFromNums">
+                                        <select style="margin: 0px;" id="chooseFromNumber" name="fromNumber">
                                             {% for dict_item in numbers %}
                                                 <option value="{{dict_item}}">
                                                     {{ dict_item }}
                                                 </option>
                                             {% endfor %}
                                     </select>
-                                    </div>
-
-                                    <div id="showNumGroups" style="display:none">
-                                        <select class="form-control" id="chooseNumGroups" name="groupID">
+                                </div>
+                                <div id="showNumGroups" style="display:none">
+                                        <select style="margin: 0px;" id="chooseNumGroups" name="groupID">
                                             {% for dict_item in groups %}
                                                 <option value="{{dict_item['id']}}">
                                                     {{ dict_item['name'] }}
                                                 </option>
                                             {% endfor %}
                                     </select>
-                                    </div>
-
-                                </label>
+                                </div>
 
 
                                 <label for="includeOptOut">
                                     Add opt out language automatically?
                                     <strong>Ex: {message template} Reply stop to opt out</strong>
                                 </label>
-                                <br>
-                                <input type="radio"  id="includeOptOut" name="optOut"/> Yes
-                                <br>
-                                <br>
+                                <input type="radio"  id="includeOptOut" name="optOut"/>
+
 
                                 <label for="includeNameIntro">
                                     Add a custom name intro?
                                     <strong>Ex: Hello {name}, {template starts here}</strong>
                                 </label>
+                                <input type="radio"  id="includeNameIntro" name="nameIntro"/>
+
                                 <br>
-                                <input type="radio"  id="includeNameIntro" name="nameIntro"/> Yes
-                                <br>
-                                <br>
-                                <input type="submit" value="Submit">
+                                <input type="submit" value="Submit" style="background:#033ec3; color: white; width:200px;">
                     </form>
             </div>
 
-            <div class="col-md-7">
-                <h2 style="text-align: center;">Review Previous Sends Here!</h2>
-                            <table>
-                                {{table | safe }}
-                            </table>
-                        </div>
+            <div class="col-md-7" style="background:#212529; height: 100vh;">
+                {{table | safe }}
+            </div>
 
         </div>
 

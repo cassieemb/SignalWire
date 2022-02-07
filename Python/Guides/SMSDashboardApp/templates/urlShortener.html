@@ -21,6 +21,17 @@
         <script type="text/javascript" src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <style>
+
+            input, select {
+            width: 300px;
+            padding: 5px;
+            margin:15px;
+         }
+
+
+
+        </style>
 
     </head>
     <body>
@@ -30,7 +41,7 @@
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
-                                       aria-haspopup="true" aria-expanded="false">Shortened URL Generator</a>
+                                       aria-haspopup="true" aria-expanded="false">Shortened URL Generator &nbsp;</a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="/home">Home Page</a>
                                         <div class="dropdown-divider"></div>
@@ -48,50 +59,50 @@
         </nav>
 
         <!-- Page Content-->
-        <div class="wrapper d-flex align-items-stretch">
+        <div class="wrapper d-flex align-items-stretch" >
 
-            <div class="col-sm-4" style="text-align: center;">
-                            <h4>Generate a shortened URL.</h4>
+            <div class="col-sm-4" style="text-align: center; background:#eee; height: 100vh;">
+
+                            <h4>Generate a Shortened URL.</h4>
                             <form action="/shortUrls" id="createShort" onsubmit="return validateForm()">
                                 <label for="createShortURL">
-                                    Full URL:
-                                    <input type="text" id="createShortURL" name="fullURL">
+                                    Enter a Full URL to Shorten:
                                 </label>
+                                <input type="text" id="createShortURL" name="fullURL">
+                                <br>
 
                                 <label for="useKeyword">
-                                    Enter a keyword to help identify your campaign (https://example.com/<strong>concertName</strong>/fds) <br>
-                                    <input type="text" id="useKeyword" name="keyword">
+                                    Enter an (optional) keyword:
                                 </label>
+                                <input type="text" id="useKeyword" name="keyword">
+                                <p>(https://example.com/<strong>keyword</strong>/abcd)</p>
 
-                                <input type="submit" value="Submit">
+                                <input type="submit" value="Submit" style="background:#033ec3; color: white;">
                             </form>
+
                             <br>
                             <br>
                             <h4>Delete a Shortened URL</h4>
                             <form action="/shortUrls">
                                 <label for="deleteShortURL">
                                     Select the URL you would like to delete.
-                                    <select class="form-control" id="deleteShortURL" name="delURL">
+                                </label>
+                                <br>
+                                <select id="deleteShortURL" name="delURL">
                                        {% for url in urls %}
                                             <option value="{{url}}">
                                                 {{ url }}
                                             </option>
                                         {% endfor %}
-
-                                    </select>
-
-                                </label>
-
-                                <input type="submit" value="Submit">
+                                </select>
+                                <br>
+                                <input type="submit" value="Submit" style="background:#033ec3; color: white;">
                             </form>
-                        </div>
+            </div>
 
-            <div class="col-md-8">
-                            <h4 style="text-align: center;">Current Shortened URLs</h4>
-                            <table>
-                                {{table | safe }}
-                            </table>
-                        </div>
+            <div class="col-md-8" style="background:#212529; height: 100vh;">
+                {{table | safe }}
+            </div>
 
         </div>
             <script type="text/javascript">

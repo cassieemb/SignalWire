@@ -2236,17 +2236,17 @@ progress {
 }
 
 input#phoneT:valid {
-  background-color:#ADC56A;
+
 }
 input#phoneF:valid {
-  background-color:#ADC56A;
+  
 }
 
 input#phoneT:invalid {
-  background-color:#C5826A;
+  background-color:#FF0000;
 }
 input#phoneF:invalid {
-  background-color:#C5826A;
+  background-color:#FF0000;
 }
 
 label {
@@ -4124,7 +4124,7 @@ a[data-toggle="collapse"] {
   max-width: 250px;
   height: 100%;
   min-height: calc(100vh - 50px);
-  background: #866ec7;
+  background: #033ec3;
   color: #fff;
   margin-top:0;
   margin-bottom:0;
@@ -4208,11 +4208,11 @@ a[data-toggle="collapse"] {
       height: 40px;
       border-radius: 50%; }
       #sidebar .custom-menu .btn.btn-primary {
-        background: #6749b9;
-        border-color: #6749b9; }
+        background: #F72A72;
+        border-color: #F72A72; }
         #sidebar .custom-menu .btn.btn-primary:hover, #sidebar .custom-menu .btn.btn-primary:focus {
-          background: #6749b9 !important;
-          border-color: #6749b9 !important; }
+          background: #F72A72 !important;
+          border-color: #F72A72 !important; }
 
 
 #sidebar-wrapper {
