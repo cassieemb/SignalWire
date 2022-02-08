@@ -154,6 +154,14 @@
     return true;
 });
     </script>
+    <script type="text/javascript">
+        <script>
+        {% if show_modal %}
+            $(document).ready(function(){
+                $("#myModal").modal('show');
+            });
+        {% endif %}
+    </script>
 
     </body>
 </html>

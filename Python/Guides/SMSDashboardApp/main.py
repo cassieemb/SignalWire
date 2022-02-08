@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash
+from flask import Flask, render_template, request, redirect, flash, jsonify
 from signalwire.rest import Client as signalwire_client
 import pandas as pd
 import os
@@ -18,12 +18,14 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
 
+
 # get environment variables from .env file
 projectID = os.getenv('SIGNALWIRE_PROJECT')
 authToken = os.getenv('SIGNALWIRE_TOKEN')
 spaceURL = os.getenv('SIGNALWIRE_SPACE')
 hostName = os.getenv('SIGNALWIRE_HOST_NAME')
 
+# set upload folder for file upload
 app.config['UPLOAD_FOLDER'] = 'src/'
 
 
@@ -214,7 +216,9 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
             # sleep for 1 second in order to rate limit at 1 messag per second - adjust based on your approved campaign throughput
             time.sleep(1)
 
+    # update sends.csv with new send data
     df = pd.read_csv('src/sends.csv')
+
     if nameIntro:
         nameIntro = True
     else:
@@ -232,9 +236,9 @@ def send_in_bulk(fileName, body, nameIntro=False, optOut=False, numberGroupID=No
     df.replace({np.nan: None})
     df.to_csv('src/sends.csv', index=None)
 
-    return 'messages done sending'
+    return
 
-
+# format numbers
 def formatNumber(number):
     formattedNumber = "+" + str(number) if "+" not in str(number) else str(number)
     return str(formattedNumber)
@@ -263,14 +267,14 @@ def deleteShortenedURL(fullURL):
     return 'shortened URL deleted'
 
 
-# pull message details using SID for alert box
+# pull message details using SID
 def pullMessage(sid):
     message = client.messages(sid).fetch()
 
     return message.sid, message.from_, message.to, message.body, message.status, message.error_code, message.error_message, message.date_sent, message.direction, message.price, message.price_unit
 
 
-# show message history for last 24 hours by default - use apply button on browser to pass additional parameters
+# show message history for last 24 hours by default
 def getMessageHistory(startDate=None, endDate=None, fromN=None, toN=None):
     # if no startDate is passed as args, assign default start date as the beginning of the previous date
     if not startDate:
@@ -598,6 +602,7 @@ def customerData():
 @app.route('/numberGroups', methods=('GET', 'POST'))
 def numberGroups():
     h4 = ''
+    groupName = 'None Selected'
     # handle add number to number group requests
     if request.args.get('numbers'):
         numbers = request.args.getlist('numbers')
@@ -652,7 +657,6 @@ def numberGroups():
         data = pd.DataFrame(d, columns=('id', 'name', 'number', 'capabilities'))
         group_table = data.to_html(classes=["table", "table-striped", "table-dark"], index=False)
         h4 = "Click a number group from the left to see the numbers it contains below."
-        groupName = 'None Selected'
 
     return render_template('numberGroups.html', groups=groups, table=group_table, groupName = groupName, numbers=numbers, h4=h4)
 
@@ -687,8 +691,8 @@ def uploadFileChoice():
         # loop through opt out dict and check if the phone number is in the recently uploaded CSV
         for result in results:
             if result in df.values:
-                print(
-                    f"The number {result} in your most recent upload is associated with {results[result][0]} {results[result][1]} who opted out on {results[result][2]}. "
+                print(f"The number {result} in your most recent upload is associated with {results[result][0]} "
+                      f"{results[result][1]} who opted out on {results[result][2]}. "
                     f"They were originally uploaded in {results[result][3]}")
 
                 numTries = 1
