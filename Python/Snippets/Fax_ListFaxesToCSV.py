@@ -9,8 +9,8 @@ client = signalwire_client("ProjectID", "AuthToken",
 # order for the arguments is Year, Month, Date, Hour, Minute, Seconds.
 # Leave hour, minute, and seconds at 0
 faxes = client.fax.faxes.list(
-    to='+18552147520',
-    from_='+12252969340',
+    to='+1xxxxxxxxxx',
+    from_='+1xxxxxxxxxx',
     date_created_after=datetime(2021, 0o3, 0o1, 17, 0o7, 0),
     date_created_on_or_before=datetime(2021, 0o4, 1, 0, 0, 0),
 

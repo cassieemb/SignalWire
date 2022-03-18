@@ -2,7 +2,7 @@ from signalwire.rest import Client as signalwire_client
 import csv
 
 client = signalwire_client("ProjectID", "AuthToken",
-signalwire_space_url='example.signalwire.com')
+                           signalwire_space_url='example.signalwire.com')
 
 incoming_phone_numbers = client.incoming_phone_numbers.list()
 print("Total Numbers -- " + str(len(incoming_phone_numbers)))
@@ -22,4 +22,7 @@ print(results)
 for record in incoming_phone_numbers:
     if record.phone_number in results:
         print("deleting number -- " + record.phone_number)
-        client.incoming_phone_numbers(record.sid).delete()
+        try:
+            client.incoming_phone_numbers(record.sid).delete()
+        except Exception as e:
+            print(e)

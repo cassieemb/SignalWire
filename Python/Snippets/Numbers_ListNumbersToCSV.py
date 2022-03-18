@@ -1,7 +1,7 @@
 from signalwire.rest import Client as signalwire_client
 import pandas as pd
 
-client = signalwire_client("ProjectID", "AuthToken", signalwire_space_url = 'SpaceURL.signalwire.com')
+client = signalwire_client("", "", signalwire_space_url = 'example.signalwire.com')
 
 # Lists all numbers on account
 incoming_phone_numbers = client.incoming_phone_numbers.list()
@@ -23,4 +23,4 @@ print('\n')
 print(df)
 
 # Exports dataframe to csv, index=False turns off the indexing for each row
-df.to_csv('CompanyName.csv', index=False, encoding='utf-8')
+df.to_csv('Numbers.csv', index=False, encoding='utf-8')

@@ -2,12 +2,11 @@ from datetime import datetime
 from signalwire.rest import Client as signalwire_client
 import pandas as pd
 
-client = signalwire_client("ProjectID", "AuthToken",
-                           signalwire_space_url='SpaceURL.signalwire.com')
+client = signalwire_client("", "",
+                           signalwire_space_url='')
 
 # Lists messages from/to a particular number within a specific date range or with a specific status
-messages = client.messages.list(date_sent_after=datetime(2021, 10, 30, 0, 0, 0),
-                                )
+messages = client.messages.list(date_sent_after=datetime(2022, 0o3, 0o7), date_sent_before=datetime(2022, 0o3, 14))
 
 # Sets up an empty array
 d = []
@@ -26,4 +25,4 @@ print('\n')
 print(df)
 
 # Exports dataframe to csv, index=False turns off the indexing for each row
-df.to_csv('CompanyMessages.csv', index=False, encoding='utf-8')
+df.to_csv('Messages.csv', index=False, encoding='utf-8')
