@@ -3,10 +3,10 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 # assign client variables
-SpaceURL = ''
-projectID = ""
-authToken = ""
-campaignSID = ""
+SpaceURL = 'EXAMPLE.signalwire.com'
+projectID = "ProjectID"
+authToken = "AuthToken"
+campaignSID = "YourSid"
 host = f"https://{SpaceURL}"
 
 
@@ -28,9 +28,10 @@ d = []
 
 # loop through numbers
 for number in campaignNumbers:
-    d.append((number['phone_number']['number'], number['state'], number['created_at']))
+    print(number)
+    d.append((number['phone_number']['number'], number['state'], number['updated_at']))
 
-df = pd.DataFrame(d, columns=('Phone Number', 'State', 'Date Added'))
+df = pd.DataFrame(d, columns=('Phone Number', 'State', 'Last Updated Date'))
 print(df.to_string())
 
 # Exports dataframe to csv, index=False turns off the indexing for each row

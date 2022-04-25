@@ -1,11 +1,10 @@
 from signalwire.rest import Client as signalwire_client
 from datetime import datetime
 
-client = signalwire_client("ProjectID",
-                           "AuthToken",
-                           signalwire_space_url='example.signalwire.com')
+client = signalwire_client("ProjectID", "AuthToken",
+                           signalwire_space_url='EXAMPLE.signalwire.com')
 
-messages = client.messages.list(date_sent=datetime(2021, 5, 25, 0, 0, 0))
+messages = client.messages.list(date_sent=datetime(2022, 0o3, 30))
 
 m = []
 

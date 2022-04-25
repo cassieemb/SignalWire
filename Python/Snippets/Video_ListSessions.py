@@ -3,9 +3,9 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 # assign auth variables
-SpaceURL = 'example.signalwire.com'
-projectID = ""
-authToken = ""
+SpaceURL = 'EXAMPLE.signalwire.com'
+projectID = "ProjectID"
+authToken = "AuthToken"
 host = f"https://{SpaceURL}"
 
 # define URL for API Endpoint
