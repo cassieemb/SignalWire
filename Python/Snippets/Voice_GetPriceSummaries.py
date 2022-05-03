@@ -20,7 +20,6 @@ total_outbound=int(direction.count("outbound"))
 df = pd.DataFrame(d, columns=('From', 'To', 'Date', 'Call SID',  'Price', 'Call Direction', 'Call Duration (s)'))
 print(df)
 df.to_csv('MarchCalls.csv', index=False, encoding='utf-8')
-print()
 
 totalCalls = len(df)
 totalCost = df['Price'].sum()
