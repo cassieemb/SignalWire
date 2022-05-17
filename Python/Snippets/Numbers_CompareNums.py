@@ -5,7 +5,7 @@ import pandas as pd
 columnB = []
 columnA = []
 missingFromColumnB = []
-PathToCSV = 'Batch-4-Complete.csv'
+PathToCSV = 'Final.csv'
 
 # Open CSV file
 with open(PathToCSV, 'r', encoding='utf-8-sig') as csvfile:

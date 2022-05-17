@@ -3,10 +3,9 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 # assign auth variables
-SpaceURL = 'EXAMPLE.signalwire.com'
-projectID = "ProjectID"
-authToken = "AuthToken"
-host = f"https://{SpaceURL}"
+SpaceURL = '.signalwire.com'
+projectID = ""
+authToken = ""
 
 # define URL for API Endpoint
 url = f"https://{SpaceURL}/api/video/room_sessions?page_size=1000"
@@ -17,7 +16,7 @@ response = requests.request("GET", url, headers=headers, data=payload, auth=HTTP
 roomSessions = response['data']
 
 while "next" in response['links'].keys():
-     response = requests.get(host + response['links']['next'], auth=HTTPBasicAuth(projectID, authToken)).json()
+     response = requests.get(response['links']['next'], auth=HTTPBasicAuth(projectID, authToken)).json()
      roomSessions.extend(response['data'])
 
 # Sets up an empty array

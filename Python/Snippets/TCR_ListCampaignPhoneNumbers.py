@@ -3,10 +3,10 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 # assign client variables
-SpaceURL = 'EXAMPLE.signalwire.com'
-projectID = "ProjectID"
-authToken = "AuthToken"
-campaignSID = "YourSid"
+SpaceURL = '.signalwire.com'
+projectID = ""
+authToken = ""
+campaignSID = ""
 host = f"https://{SpaceURL}"
 
 

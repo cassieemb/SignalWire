@@ -1,11 +1,12 @@
 from signalwire.rest import Client as signalwire_client
 import csv
+import pandas as pd
 
 # define your variables here so they don't need to be hardcoded
-SpaceURL = ''
+SpaceURL = '.signalwire.com'
 projectID = ""
 authToken = ""
-PathToCSV = 'FileName.csv'
+PathToCSV = 'CampaignNumbers.csv'
 
 # Replace project ID, auth token, and space URL
 client = signalwire_client(projectID, authToken, signalwire_space_url=SpaceURL)
@@ -37,4 +38,6 @@ for record in incoming_phone_numbers:
         print('unregistered number --' + record.phone_number)
         unregistered.append(record.phone_number)
 
-print(unregistered)
+# Puts message log array into dataframe with headers for easier reading.
+df = pd.DataFrame(unregistered, columns=['Phone Number'])
+df.to_csv('UnregisteredNumbers.csv', index=False, encoding='utf-8')
