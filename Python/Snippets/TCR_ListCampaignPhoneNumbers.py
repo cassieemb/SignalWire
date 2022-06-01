@@ -3,7 +3,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 # assign client variables
-SpaceURL = '.signalwire.com'
+SpaceURL = 'example.signalwire.com'
 projectID = ""
 authToken = ""
 campaignSID = ""
@@ -21,10 +21,13 @@ campaignNumbers = response['data']
 while "next" in response['links'].keys():
      response = requests.get(host + response['links']['next'], auth=HTTPBasicAuth(projectID, authToken)).json()
      campaignNumbers.extend(response['data'])
+
 print(f"There are {len(campaignNumbers)} total numbers in campaign {campaignSID}.")
 
 # Sets up an empty array
 d = []
+
+print(campaignNumbers)
 
 # loop through numbers
 for number in campaignNumbers:

@@ -5,21 +5,15 @@ import pandas as pd
 client = signalwire_client("ProjectID", "AuthToken",
                            signalwire_space_url='example.signalwire.com')
 
-# Start Time is a datetime object
-# order for the arguments is Year, Month, Date, Hour, Minute, Seconds.
-# Leave hour, minute, and seconds at 0
+
 calls = client.calls.list(
-    start_time_after=datetime(2021, 0o4, 29, 17, 0o7, 0),
-    start_time_before=datetime(2021, 0o1, 27, 0, 0, 0),
+    start_time_after=datetime(2021, 0o4, 29),
+    start_time_before=datetime(2021, 0o1, 27),
     from_="+1888xxxxxxx",
 
 )
 
-# Appends all data from calls into an array
-for record in calls:
-    print((record.start_time, record.status, record.sid))
-
-# # Sets up an empty array
+# Sets up an empty array
 d = []
 
 # Appends all data from calls into an array

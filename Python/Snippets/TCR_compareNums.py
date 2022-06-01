@@ -3,7 +3,7 @@ import csv
 import pandas as pd
 
 # define your variables here so they don't need to be hardcoded
-SpaceURL = '.signalwire.com'
+SpaceURL = 'example.signalwire.com'
 projectID = ""
 authToken = ""
 PathToCSV = 'CampaignNumbers.csv'
@@ -40,4 +40,4 @@ for record in incoming_phone_numbers:
 
 # Puts message log array into dataframe with headers for easier reading.
 df = pd.DataFrame(unregistered, columns=['Phone Number'])
-df.to_csv('UnregisteredNumbers.csv', index=False, encoding='utf-8')
+df.to_csv('UnregisteredMMPNumbers.csv', index=False, encoding='utf-8')

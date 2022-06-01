@@ -2,11 +2,11 @@ from datetime import datetime
 from signalwire.rest import Client as signalwire_client
 import pandas as pd
 
-client = signalwire_client("", "",
-                           signalwire_space_url='EXAMPLE.signalwire.com')
+client = signalwire_client("ProjectID", "AuthToken",
+                           signalwire_space_url='example.signalwire.com')
 
 # Lists messages from/to a particular number within a specific date range or with a specific status
-messages = client.messages.list(date_sent=datetime(2022, 4, 27))
+messages = client.messages.list(date_sent_after=datetime(2022, 2, 10))
 
 # Sets up an empty array
 d = []
