@@ -1,7 +1,5 @@
-from signalwire.rest import Client as signalwire_client
 import requests
 from requests.auth import HTTPBasicAuth
-import pandas as pd
 import csv
 
 # define your variables here to reuse throughout code
@@ -12,13 +10,10 @@ campaignSID = ""
 PathToCSV = 'UnregisteredNumbers.csv'
 results = []
 
-# Replace project ID, auth token, and space URL
-client = signalwire_client(projectID, authToken, signalwire_space_url=SpaceURL)
-
-
-# Open CSV file with registered numbers
+# Open CSV file with unregistered numbers
 with open(PathToCSV, 'r', encoding='utf-8-sig') as csvfile:
     reader = csv.reader(csvfile)
+    next(reader, None)
     # Change to E164 format if it's not already in that format
     for row in reader:
         if "+" not in row[0]:
@@ -28,18 +23,16 @@ with open(PathToCSV, 'r', encoding='utf-8-sig') as csvfile:
 
 for result in results:
     try:
-         response = requests.post(f"https://{SpaceURL}/api/relay/rest/registry/beta/campaigns/{campaignSID}/orders",
-                          json = {"phone_numbers": [result]},
-                          headers = {
-                             "Accept": "application/json",
-                                "Content-Type": "application/json"},
-                          auth=HTTPBasicAuth(projectID, authToken))
-         if response.ok:
-             print(f"{result} added to campaign")
-         else:
-             print(f"{response.status_code} {response.text}. {result} not added to campaign.")
+        response = requests.post(f"https://{SpaceURL}/api/relay/rest/registry/beta/campaigns/{campaignSID}/orders",
+                                 json={"phone_numbers": [result]},
+                                 headers={
+                                     "Accept": "application/json",
+                                     "Content-Type": "application/json"},
+                                 auth=HTTPBasicAuth(projectID, authToken))
+        if response.ok:
+            print(f"{result} added to campaign")
+        else:
+            print(f"{response.status_code} {response.text}. {result} not added to campaign.")
 
     except Exception as e:
-         print(f"Error: {str(e)}")
-
-
+        print(f"Error: {str(e)}")
