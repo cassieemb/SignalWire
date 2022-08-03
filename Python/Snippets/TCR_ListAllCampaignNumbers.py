@@ -4,7 +4,7 @@ from signalwire.rest import Client as signalwire_client
 import pandas as pd
 
 # define your variables here to reuse throughout code
-SpaceURL = 'example.signalwire.com'
+SpaceURL = '.signalwire.com'
 projectID = ""
 authToken = ""
 host = f"https://{SpaceURL}"
@@ -13,18 +13,17 @@ all_campaign_numbers = []
 # Replace project ID, auth token, and space URL
 client = signalwire_client(projectID, authToken, signalwire_space_url=SpaceURL)
 
-
 # list all of our brands
 response = requests.get(f"https://{SpaceURL}/api/relay/rest/registry/beta/brands",
-                             headers={
-                                 "Accept": "application/json",
-                                 "Content-Type": "application/json"},
-                             auth=HTTPBasicAuth(projectID, authToken)).json()
+                        headers={
+                            "Accept": "application/json",
+                            "Content-Type": "application/json"},
+                        auth=HTTPBasicAuth(projectID, authToken)).json()
 brands = response['data']
 
 while "next" in response['links'].keys():
-     response = requests.get(host + response['links']['next'], auth=HTTPBasicAuth(projectID, authToken)).json()
-     brands.extend(response['data'])
+    response = requests.get(host + response['links']['next'], auth=HTTPBasicAuth(projectID, authToken)).json()
+    brands.extend(response['data'])
 
 print(f"You have {len(brands)} brands!")
 
@@ -75,13 +74,15 @@ for brand in brands:
             numberID = number['phone_number']['id']
             tn = number['phone_number']['number']
             numberState = number['state']
-            addToCampaignDate =number['created_at']
+            addToCampaignDate = number['created_at']
 
-            all_campaign_numbers.append([brand_sid, brand_ID, campaignSID, campaignID, numberID, tn, numberState, addToCampaignDate])
-
+            all_campaign_numbers.append(
+                [brand_sid, brand_ID, campaignSID, campaignID, numberID, tn, numberState, addToCampaignDate])
 
 # create dataframe
-df = pd.DataFrame(all_campaign_numbers, columns=('Brand SID', 'Brand ID', 'Campaign SID', 'Campaign ID', 'Number SID', 'Number', 'Number State', 'Date Added to Campaign'))
+df = pd.DataFrame(all_campaign_numbers, columns=(
+'Brand SID', 'Brand ID', 'Campaign SID', 'Campaign ID', 'Number SID', 'Number', 'Number State',
+'Date Added to Campaign'))
 print(df.to_string())
 
 df.to_csv('AllSpaceCampaigns.csv', index=False, encoding='utf-8')
