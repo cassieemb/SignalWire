@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@signalwire/compatibility-api": "^3.0.5",
+    "@signalwire/realtime-api": "^3.8.2",
+    "csv-stringify": "^6.3.2",
+    "dotenv": "^16.0.3"
+  },
+  "type": "module"
+}
