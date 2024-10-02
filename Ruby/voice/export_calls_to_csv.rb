@@ -1,12 +1,13 @@
 require 'signalwire/sdk'
-require 'active_support/time'
 require 'csv'
 require 'dotenv/load'
 
 @client = Signalwire::REST::Client.new ENV['PROJECT_ID'], ENV['AUTH_TOKEN'], signalwire_space_url: ENV['SPACE_URL']
 
+start_date = DateTime.now - 7
+
 # Filter by optional parameters specified in docs
-calls = @client.calls.list(status: 'completed')
+calls = @client.calls.list(status: 'failed', start_time_after: start_date.to_time)
 
 # Create headers
 headers = %w[SID Date Direction From To Price Status]

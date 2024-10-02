@@ -6,7 +6,7 @@ const client = new Messaging.Client({
     project: process.env.PROJECT_ID,
     token: process.env.AUTH_TOKEN,
     contexts: ["office"],
-    // host: process.env.ST_HOST // only when testing on staging
+    //host: process.env.ST_HOST // only when testing on staging
 });
 
 // send a message
@@ -14,12 +14,13 @@ try {
     const status = await client.send({
         context: "office",
         from: process.env.FROM_NUMBER,
-        to: process.env.PERSONAL_NUMBER,
+        to: "+19727906810",
         body: "Hello World!",
-        media: null
     })
 
     console.log(status)
+    process.exit()
 } catch (e) {
     console.error(e)
+    process.exit()
 }

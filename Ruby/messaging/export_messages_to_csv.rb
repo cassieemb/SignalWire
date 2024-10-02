@@ -1,5 +1,4 @@
 require 'signalwire/sdk'
-require 'active_support/time'
 require 'csv'
 require 'dotenv/load'
 
