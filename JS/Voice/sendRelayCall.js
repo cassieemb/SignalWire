@@ -1,6 +1,7 @@
 import { Voice } from "@signalwire/realtime-api";
 import EventEmitter from 'events';
-import "dotenv/config.js";
+import dotenv from 'dotenv';
+dotenv.config({ path: './../.env' })
 
 const client = new Voice.Client({
     project: process.env.PROJECT_ID,
@@ -9,7 +10,7 @@ const client = new Voice.Client({
     /*debug: {
       logWsTraffic: true,
      },*/
-    // host: process.env.ST_HOST // only needed on staging
+    // host: process.env.HOST // not required in production environments
 });
 
 const call = await client.dialPhone({

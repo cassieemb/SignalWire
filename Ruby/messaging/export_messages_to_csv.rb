@@ -1,6 +1,8 @@
 require 'signalwire/sdk'
 require 'csv'
-require 'dotenv/load'
+require 'dotenv'
+
+Dotenv.load("./../.env")
 
 @client = Signalwire::REST::Client.new ENV['PROJECT_ID'], ENV['AUTH_TOKEN'], signalwire_space_url: ENV['SPACE_URL']
 

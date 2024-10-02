@@ -1,11 +1,12 @@
 import { Voice } from "@signalwire/realtime-api";
-import "dotenv/config.js";
+import dotenv from 'dotenv';
+dotenv.config({ path: './../.env' })
 
 const client = new Voice.Client({
-    project: process.env.DT_PROJECT_ID,
-    token: process.env.DT_AUTH_TOKEN,
+    project: process.env.PROJECT_ID,
+    token: process.env.AUTH_TOKEN,
     contexts: ["office"],
-    host: process.env.DT_HOST // only when testing on st/eu
+    // host: process.env.HOST // not required in production environments
 });
 
 console.log("Started successfully - waiting for a call to be received")
