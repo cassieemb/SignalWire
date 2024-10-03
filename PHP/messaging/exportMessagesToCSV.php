@@ -1,7 +1,7 @@
 <?php
 require './vendor/autoload.php';
 use SignalWire\Rest\Client;
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
 $dotenv->safeLoad();
 
 $client = new Client($_ENV["PROJECT_ID"], $_ENV["AUTH_TOKEN"], array("signalwireSpaceUrl" => $_ENV["SPACE_URL"]));
