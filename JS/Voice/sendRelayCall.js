@@ -1,7 +1,7 @@
 import { Voice } from "@signalwire/realtime-api";
 import EventEmitter from 'events';
 import dotenv from 'dotenv';
-dotenv.config({ path: './../.env' })
+dotenv.config({ path: '../../.env' })
 
 const client = new Voice.Client({
     project: process.env.PROJECT_ID,

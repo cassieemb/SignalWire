@@ -1,6 +1,6 @@
 import { Messaging } from "@signalwire/realtime-api";
 import dotenv from 'dotenv';
-dotenv.config({ path: './../.env' })
+dotenv.config({ path: '../../.env' })
 
 // create client
 const client = new Messaging.Client({

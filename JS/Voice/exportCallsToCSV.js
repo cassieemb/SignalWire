@@ -1,7 +1,7 @@
 import {RestClient} from "@signalwire/compatibility-api";
 import fs from "fs";
 import dotenv from 'dotenv';
-dotenv.config({ path: './../.env' })
+dotenv.config({ path: '../../.env' })
 
 const client = new RestClient(process.env.PROJECT_ID, process.env.AUTH_TOKEN, {signalwireSpaceUrl: process.env.SPACE_URL});
 
