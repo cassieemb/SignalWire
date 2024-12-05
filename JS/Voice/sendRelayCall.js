@@ -10,7 +10,7 @@ const client = new Voice.Client({
     /*debug: {
       logWsTraffic: true,
      },*/
-    // host: process.env.HOST // not required in production environments
+    //host: process.env.HOST // not required in production environments
 });
 
 const call = await client.dialPhone({
