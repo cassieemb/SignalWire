@@ -13,7 +13,7 @@ load_dotenv()
 
 # get environment variables from example.env file
 hostName = os.getenv('HOSTNAME')
-path_to_csv = os.getenv('PATH')
+path_to_csv = os.getenv('PATH_TO_CSV')
 
 
 # generate shortened URL using encoding and store in CSV
